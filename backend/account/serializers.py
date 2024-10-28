@@ -39,7 +39,6 @@ class UserSerializer(serializers.ModelSerializer):
         return user
     
 class TeacherSerializer(UserSerializer):
-    email = serializers.EmailField(required=True)
     subject = serializers.CharField(required=True)
     institution = serializers.CharField(required=True, allow_blank=True)
 
@@ -64,7 +63,6 @@ class TeacherSerializer(UserSerializer):
         return data
 
 class StudentSerializer(UserSerializer):
-    email = serializers.EmailField(required=True)
     school = serializers.CharField(required=True, allow_blank=True)
     grade = serializers.CharField(required=True)
 
@@ -86,4 +84,4 @@ class StudentSerializer(UserSerializer):
     def validate_grade(self, data):
         if (data not in dict(Student.GRADE_CHOICES)):
             raise serializers.ValidationError("유효하지 않은 학년입니다.")
-        return data;
+        return data
