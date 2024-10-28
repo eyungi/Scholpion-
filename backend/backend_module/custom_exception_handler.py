@@ -16,7 +16,7 @@ def custom_exception_handler(exc, context):
             return Response({"error": str(exc), "status_code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
         if isinstance(exc, ValueError):
             if "ValueError: Invalid user type" in str(exc):
-                return Response({"user_type": "유효하지 않은 user_type입니다.", "status_code": status.HTTP_400_BAD_REQUEST})
+                return Response({"role": "유효하지 않은 role입니다.", "status_code": status.HTTP_400_BAD_REQUEST})
             return Response({'error': str(exc), "status_code": status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
     # Now add the HTTP status code to the response.
     if response is not None:

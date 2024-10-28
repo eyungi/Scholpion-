@@ -7,10 +7,10 @@ from .serializers import StudentSerializer, TeacherSerializer
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     def get_serializer_class(self):
-        self.user_type = self.request.data.get('user_type')
-        if self.user_type == '학생':
+        role = self.request.data.get('role')
+        if role == '학생':
             return StudentSerializer
-        elif self.user_type == '선생님':
+        elif role == '선생님':
             return TeacherSerializer
         raise ValueError("Invalid user type")
 
@@ -27,7 +27,7 @@ class RegisterView(generics.CreateAPIView):
             "user": {
                 "email": user.email,
                 "name": user.name,
-                "user_type": self.user_type,
+                "role": user.role,
             },
             "token": {
                 "access": str(token.access_token),

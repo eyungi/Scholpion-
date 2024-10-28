@@ -6,13 +6,14 @@ from .models import User, Teacher, Student
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required = True, validators=[UniqueValidator(queryset=User.objects.all())])
     name = serializers.CharField(required = True)
+    role = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only = True, validators=[validate_password])
     password2 = serializers.CharField(required=True, write_only = True)
 
     class Meta:
         model = User
-        fields = ('email', 'name', 'password', 'password2')
-    
+        fields = ('email', 'name', 'role', 'password', 'password2')
+
     def validate(self, data):
         if data['password'] != data['password2']:
             raise serializers.ValidationError({
@@ -21,10 +22,16 @@ class UserSerializer(serializers.ModelSerializer):
         
         return data
 
+    def validate_role(self, data):
+        if (data not in dict(User.ROLE_CHOICES)):
+            raise serializers.ValidationError("유효하지 않은 사용자 유형입니다.")
+        return data
+
     def create(self, validated_data):
         user = User.objects.create(
             email = validated_data['email'],
             name = validated_data['name'],
+            role = validate_password['role']
         )
         user.set_password(validated_data['password'])
         user.save()

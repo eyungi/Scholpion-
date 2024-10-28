@@ -11,23 +11,23 @@ class UserRegisterTestCase(APITestCase):
         choice = random.choice([1, 2]) # 선생님과 학생 중 테스트할 모델을 랜덤으로 선택
         if choice == 1:
             user_factory = TeacherFactory
-            user_type = "선생님"
+            role = "선생님"
         elif choice == 2:
             user_factory = StudentFactory
-            user_type = "학생"
+            role = "학생"
         user = user_factory.build() # db에 저장되지 않게 설정
         data = {
             "name": user.name,
             "email": user.email,
-            "user_type": user_type,
+            "role": role,
             "password": user.password,
             "password2": user.password,
         }
         # 유저 타입에 따라 추가 필드 설정
-        if user_type == '학생':
+        if role == '학생':
             data['school'] = user.school
             data['grade'] = user.grade
-        elif user_type == '선생님':
+        elif role == '선생님':
             data['institution'] = user.institution
             data['subject'] = user.subject
         data.update(kwargs)
@@ -51,7 +51,7 @@ class UserRegisterTestCase(APITestCase):
             "name": "name",
             "password": "dkssud!!",
             "password2": "dkssud!!",
-            "user_type": "학생",
+            "role": "학생",
             "school": "서강고", 
             "grade": "고3"
         }
@@ -80,50 +80,50 @@ class UserRegisterTestCase(APITestCase):
 
     def test_register_with_unselected_fields(self):
         data = self.create_user_data()
-        if data["user_type"] == "선생님":
+        if data["role"] == "선생님":
             data["institution"] = None
             data["subject"] =  None
-        elif data["user_type"] == "학생":
+        elif data["role"] == "학생":
             data["school"] = None
             data["grade"] = None
         response = self.client.post(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_register_with_unselected_user_type(self):
+    def test_register_with_unselected_role(self):
         data = self.create_user_data()
-        data["user_type"] = None
+        data["role"] = None
         response = self.client.post(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_register_with_invalid_user_type(self):
+    def test_register_with_invalid_role(self):
         data = self.create_user_data()
-        data["user_type"] = "아뇨 뚱인데요"
+        data["role"] = "아뇨 뚱인데요"
         response = self.client.post(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_register_with_no_institution_or_school(self):
         data = self.create_user_data()
-        if (data["user_type"] == "선생님"):
+        if (data["role"] == "선생님"):
             data["institution"] = ""
-        elif (data["user_type"] == "학생"):
+        elif (data["role"] == "학생"):
             data["school"] = ""
         response = self.client.post(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_register_with_no_subject_or_grade(self):
         data = self.create_user_data()
-        if (data["user_type"] == "선생님"):
+        if (data["role"] == "선생님"):
             data["subject"] = ""
-        elif (data["user_type"] == "학생"):
+        elif (data["role"] == "학생"):
             data["grade"] = ""
         response = self.client.post(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_register_with_invalid_subject_or_grade(self):
         data = self.create_user_data()
-        if (data["user_type"] == "선생님"):
+        if (data["role"] == "선생님"):
             data["subject"] = "요리"
-        elif (data["user_type"] == "학생"):
+        elif (data["role"] == "학생"):
             data["grade"] = "대5"
         response = self.client.post(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

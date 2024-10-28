@@ -22,7 +22,7 @@ class UserManager(BaseUserManager):
             email=self.normalize_email(email),
             password=password,
             name=name,
-            role=None,
+            role="기타",
         )
         user.is_superuser = True
         user.is_staff = True
