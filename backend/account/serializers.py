@@ -31,7 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create(
             email = validated_data['email'],
             name = validated_data['name'],
-            role = validate_password['role']
+            role = validated_data['role']
         )
         user.set_password(validated_data['password'])
         user.save()
@@ -50,6 +50,7 @@ class TeacherSerializer(UserSerializer):
         teacher = Teacher.objects.create(
             email = validated_data['email'],
             name = validated_data['name'],
+            role = validated_data['role'],
             institution = validated_data['institution'],
             subject = validated_data['subject']
         )
@@ -74,6 +75,7 @@ class StudentSerializer(UserSerializer):
         student = Student.objects.create(
             email = validated_data['email'],
             name = validated_data['name'],
+            role = validated_data['role'],
             school=validated_data['school'],
             grade=validated_data['grade']
         )
