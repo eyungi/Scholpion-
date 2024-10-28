@@ -54,6 +54,7 @@ class TeacherSerializer(UserSerializer):
             institution = validated_data['institution'],
             subject = validated_data['subject']
         )
+        teacher.set_password(validated_data['password'])
         teacher.save()
 
         return teacher    
@@ -79,6 +80,7 @@ class StudentSerializer(UserSerializer):
             school=validated_data['school'],
             grade=validated_data['grade']
         )
+        student.set_password(validated_data['password'])
         student.save()
 
         return student
