@@ -1,8 +1,10 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .models import User
+from .models import User, Teacher, Student
 from .serializers import StudentSerializer, TeacherSerializer
+from .permissions import IsOwnerOreadOnly
+from django.shortcuts import get_object_or_404
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -36,3 +38,49 @@ class RegisterView(generics.CreateAPIView):
         }
 
         return Response(response_data, status=status.HTTP_201_CREATED)
+    
+class UserView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsOwnerOreadOnly]
+
+    def get_queryset(self):
+        pk = self.kwargs.get('pk')
+        role = get_object_or_404(User, pk=pk).role
+        if role == '학생':
+            return Student
+        elif role == '선생님':
+            return Teacher
+        else:
+            raise ValueError("Invalid user role")
+
+    def get_serializer_class(self):
+        pk = self.kwargs.get('pk')
+        role = get_object_or_404(User, pk=pk).role
+        if role == '학생':
+            return StudentSerializer
+        elif role == '선생님':
+            return TeacherSerializer
+        else:
+            raise ValueError("Invalid user role")
+    
+    def get(self, request, *args, **kwargs):
+            return super().get(request, *args, **kwargs)
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)  # 일부만 수정 허용
+        instance = self.get_object()
+
+        # email, role은 변경 불가
+        if 'email' in request.data or 'role' in request.data:
+            return Response({"error: 변경할 수 없는 필드를 포함하고 있습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response({"회원정보 수정이 완료되었습니다."}, status=status.HTTP_200_OK)
+    
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        instance.is_active = False
+        instance.save()
+        return Response({"회원 탈퇴가 완료되었습니다"}, status=status.HTTP_204_NO_CONTENT)

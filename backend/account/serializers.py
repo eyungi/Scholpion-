@@ -59,6 +59,17 @@ class TeacherSerializer(UserSerializer):
 
         return teacher    
     
+    def update(self, instance, validated_data):
+        instance.email = validated_data.get('email', instance.email)
+        instance.name = validated_data.get('name', instance.name)
+        instance.role = validated_data.get('role', instance.role)
+        instance.institution = validated_data.get('institution', instance.institution)
+        instance.subject = validated_data.get('subject', instance.subject)
+        instance.set_password(validated_data('password'))
+
+        instance.save()
+        return instance
+    
     def validate_subject(self, data):
         if (data not in dict(Teacher.SUBJECT_CHOICES)):
             raise serializers.ValidationError("유효하지 않은 과목입니다.")
@@ -84,6 +95,17 @@ class StudentSerializer(UserSerializer):
         student.save()
 
         return student
+    
+    def update(self, instance, validated_data):
+        instance.email = validated_data.get('email', instance.email)
+        instance.name = validated_data.get('name', instance.name)
+        instance.role = validated_data.get('role', instance.role)
+        instance.school = validated_data.get('school', instance.school)
+        instance.grade = validated_data.get('grade', instance.grade)
+        instance.set_password(validated_data.get('password'))
+
+        instance.save()
+        return instance
     
     def validate_grade(self, data):
         if (data not in dict(Student.GRADE_CHOICES)):
