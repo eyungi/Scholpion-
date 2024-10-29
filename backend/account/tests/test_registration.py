@@ -21,7 +21,6 @@ class UserRegisterTestCase(APITestCase):
             "email": user.email,
             "role": role,
             "password": user.password,
-            "password2": user.password,
         }
         # 유저 타입에 따라 추가 필드 설정
         if role == '학생':
@@ -50,7 +49,6 @@ class UserRegisterTestCase(APITestCase):
             "email": existing_user['email'],
             "name": "name",
             "password": "dkssud!!",
-            "password2": "dkssud!!",
             "role": "학생",
             "school": "서강고", 
             "grade": "고3"
@@ -69,12 +67,7 @@ class UserRegisterTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         
     def test_register_with_short_password(self):
-        data = self.create_user_data(password="a76", password2="a76")
-        response = self.client.post(self.url, data=data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_register_with_mismatched_passwords(self):
-        data = self.create_user_data(password="dkssud!!", password2="dkssyd!!")
+        data = self.create_user_data(password="a76")
         response = self.client.post(self.url, data=data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 

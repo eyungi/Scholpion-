@@ -8,19 +8,10 @@ class UserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required = True)
     role = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only = True, validators=[validate_password])
-    password2 = serializers.CharField(required=True, write_only = True)
 
     class Meta:
         model = User
-        fields = ('email', 'name', 'role', 'password', 'password2')
-
-    def validate(self, data):
-        if 'password' in data and 'password2' in data:
-            if data['password'] != data['password2']:
-                raise serializers.ValidationError({
-                    "password": "Password fields didn't match"
-                })
-        return data
+        fields = ('email', 'name', 'role', 'password')
 
     def validate_role(self, data):
         if (data not in dict(User.ROLE_CHOICES)):
