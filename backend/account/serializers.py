@@ -15,28 +15,17 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('email', 'name', 'role', 'password', 'password2')
 
     def validate(self, data):
-        if data['password'] != data['password2']:
-            raise serializers.ValidationError({
-                "password" : "Password fields didn't match"
-            })
-        
+        if 'password' in data and 'password2' in data:
+            if data['password'] != data['password2']:
+                raise serializers.ValidationError({
+                    "password": "Password fields didn't match"
+                })
         return data
 
     def validate_role(self, data):
         if (data not in dict(User.ROLE_CHOICES)):
             raise serializers.ValidationError("유효하지 않은 사용자 유형입니다.")
         return data
-
-    def create(self, validated_data):
-        user = User.objects.create(
-            email = validated_data['email'],
-            name = validated_data['name'],
-            role = validated_data['role']
-        )
-        user.set_password(validated_data['password'])
-        user.save()
-    
-        return user
     
 class TeacherSerializer(UserSerializer):
     subject = serializers.CharField(required=True)
