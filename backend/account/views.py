@@ -76,7 +76,7 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        return Response({"회원정보 수정이 완료되었습니다."}, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
