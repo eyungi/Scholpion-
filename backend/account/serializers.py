@@ -18,6 +18,16 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("유효하지 않은 사용자 유형입니다.")
         return data
     
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            if key == 'password':
+                if value:
+                    instance.set_password(value)  # request에 비밀번호가 있을 때만 해싱하여 저장
+            else:
+                setattr(instance, key, value)
+        instance.save()
+        return instance
+    
 class TeacherSerializer(UserSerializer):
     subject = serializers.CharField(required=True)
     institution = serializers.CharField(required=True, allow_blank=True)
@@ -38,17 +48,6 @@ class TeacherSerializer(UserSerializer):
         teacher.save()
 
         return teacher    
-    
-    def update(self, instance, validated_data):
-        instance.email = validated_data.get('email', instance.email)
-        instance.name = validated_data.get('name', instance.name)
-        instance.role = validated_data.get('role', instance.role)
-        instance.institution = validated_data.get('institution', instance.institution)
-        instance.subject = validated_data.get('subject', instance.subject)
-        instance.set_password(validated_data('password'))
-
-        instance.save()
-        return instance
     
     def validate_subject(self, data):
         if (data not in dict(Teacher.SUBJECT_CHOICES)):
@@ -75,17 +74,6 @@ class StudentSerializer(UserSerializer):
         student.save()
 
         return student
-    
-    def update(self, instance, validated_data):
-        instance.email = validated_data.get('email', instance.email)
-        instance.name = validated_data.get('name', instance.name)
-        instance.role = validated_data.get('role', instance.role)
-        instance.school = validated_data.get('school', instance.school)
-        instance.grade = validated_data.get('grade', instance.grade)
-        instance.set_password(validated_data.get('password'))
-
-        instance.save()
-        return instance
     
     def validate_grade(self, data):
         if (data not in dict(Student.GRADE_CHOICES)):
