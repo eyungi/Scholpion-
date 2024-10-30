@@ -80,7 +80,6 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
     
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data)
         instance.is_active = False
         instance.save()
-        return Response({"회원 탈퇴가 완료되었습니다"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"message: 회원 탈퇴가 완료되었습니다"}, status=status.HTTP_204_NO_CONTENT)
