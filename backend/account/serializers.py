@@ -6,18 +6,12 @@ from .models import User, Teacher, Student
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required = True, validators=[UniqueValidator(queryset=User.objects.all())])
     name = serializers.CharField(required = True)
-    role = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only = True, validators=[validate_password])
 
     class Meta:
         model = User
-        fields = ('email', 'name', 'role', 'password')
+        fields = ('email', 'name', 'password')
 
-    def validate_role(self, data):
-        if (data not in dict(User.ROLE_CHOICES)):
-            raise serializers.ValidationError("유효하지 않은 사용자 유형입니다.")
-        return data
-    
     def update(self, instance, validated_data):
         for key, value in validated_data.items():
             if key == 'password':
@@ -40,7 +34,6 @@ class TeacherSerializer(UserSerializer):
         teacher = Teacher.objects.create(
             email = validated_data['email'],
             name = validated_data['name'],
-            role = validated_data['role'],
             institution = validated_data['institution'],
             subject = validated_data['subject']
         )
@@ -66,7 +59,6 @@ class StudentSerializer(UserSerializer):
         student = Student.objects.create(
             email = validated_data['email'],
             name = validated_data['name'],
-            role = validated_data['role'],
             school=validated_data['school'],
             grade=validated_data['grade']
         )

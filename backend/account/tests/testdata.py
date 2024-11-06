@@ -32,11 +32,12 @@ def create_moke_user_data():
 # return instance
 def create_moke_user():
     moke_user_data = create_moke_user_data()
-    if moke_user_data['role'] == "학생":
+    del moke_user_data['role']
+    if 'school' in moke_user_data:
         moke_user = Student(**moke_user_data)
         moke_user.set_password(moke_user.password)
         moke_user.save()
-    elif moke_user_data['role'] == '선생님':
+    elif 'institution' in moke_user_data:
         moke_user = Teacher(**moke_user_data)
         moke_user.set_password(moke_user.password)
         moke_user.save()

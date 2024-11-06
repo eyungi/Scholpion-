@@ -22,14 +22,17 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         token = RefreshToken.for_user(user)  # JWT 토큰 생성
-
+        if (hasattr(user, 'student')):
+            role = '학생'
+        elif (hasattr(user, 'teacher')):
+            role = '선생님'
         # 응답 데이터 구성
         response_data = {
             "message": "회원가입에 성공하였습니다.",
             "user": {
                 "email": user.email,
                 "name": user.name,
-                "role": user.role,
+                "role": role
             },
             "token": {
                 "access": str(token.access_token),
@@ -44,7 +47,11 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         pk = self.kwargs.get('pk')
-        role = get_object_or_404(User, pk=pk).role
+        user = get_object_or_404(User, pk=pk)
+        if (hasattr(user, 'student')):
+            role = '학생'
+        elif (hasattr(user, 'teacher')):
+            role = '선생님'
         if role == '학생':
             return Student
         elif role == '선생님':
@@ -54,7 +61,11 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_serializer_class(self):
         pk = self.kwargs.get('pk')
-        role = get_object_or_404(User, pk=pk).role
+        user = get_object_or_404(User, pk=pk)
+        if (hasattr(user, 'student')):
+            role = '학생'
+        elif (hasattr(user, 'teacher')):
+            role = '선생님'
         if role == '학생':
             return StudentSerializer
         elif role == '선생님':
@@ -69,8 +80,8 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
         partial = kwargs.pop('partial', True)  # 일부만 수정 허용
         instance = self.get_object()
 
-        # email, role은 변경 불가
-        if 'email' in request.data or 'role' in request.data:
+        # email은 변경 불가
+        if 'email' in request.data:
             return Response({"error: 변경할 수 없는 필드를 포함하고 있습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = self.get_serializer(instance, data=request.data, partial=partial)

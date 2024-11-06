@@ -9,12 +9,6 @@ from .manager import UserManager
 class User(AbstractBaseUser, PermissionsMixin):
     uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, primary_key=True)
     email = models.EmailField(db_index=True, unique=True)
-    ROLE_CHOICES = [
-        ('선생님', '선생님'),
-        ('학생', '학생'),
-        ('기타', '기타')
-    ]
-    role = models.CharField(max_length=3, choices=ROLE_CHOICES, null=False, default="기타")
     name = models.CharField(max_length=100)
     is_staff = models.BooleanField(
         _('staff status'),

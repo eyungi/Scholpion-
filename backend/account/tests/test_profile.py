@@ -46,14 +46,8 @@ class ProfileTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual("logintest", updated_user.password)
 
-    def test_patch_role(self):
-        response = self.client.patch(self.url, {
-            "role": "선생님"
-        })
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
     def test_patch_other_fields(self):
-        if self.moke_user.role == "학생":
+        if hasattr(self.moke_user, 'school'):
             response = self.client.patch(self.url, {
                 "name": "logintest",
                 "school": "동강고",
@@ -61,7 +55,7 @@ class ProfileTestCase(APITestCase):
             })
             self.assertEqual("동강고", response.data['school'])
             self.assertEqual("고2", response.data['grade'])
-        elif self.moke_user.role == "선생님":
+        elif hasattr(self.moke_user, 'institution'):
             response = self.client.patch(self.url, {
                 "name": "logintest",
                 "institution": "서강학원",
