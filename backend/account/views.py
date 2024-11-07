@@ -5,6 +5,11 @@ from .models import User, Teacher, Student
 from .serializers import StudentSerializer, TeacherSerializer
 from .permissions import IsOwnerOreadOnly
 from django.shortcuts import get_object_or_404
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import CustomTokenObtainPairSerializer
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -21,7 +26,12 @@ class RegisterView(generics.CreateAPIView):
         serializer = serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        token = RefreshToken.for_user(user)  # JWT 토큰 생성
+
+        # 커스텀 토큰 생성
+        token_serializer = CustomTokenObtainPairSerializer(data={'email': user.email, 'password': request.data['password']})
+        token_serializer.is_valid(raise_exception=True)
+        token = token_serializer.validated_data
+        
         if (hasattr(user, 'student')):
             role = '학생'
         elif (hasattr(user, 'teacher')):
@@ -35,8 +45,8 @@ class RegisterView(generics.CreateAPIView):
                 "role": role
             },
             "token": {
-                "access": str(token.access_token),
-                "refresh": str(token),
+                "access": str(token['access']),
+                "refresh": str(token['refresh']),
             }
         }
 
