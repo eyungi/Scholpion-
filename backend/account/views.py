@@ -7,6 +7,7 @@ from .permissions import IsOwnerOreadOnly
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
+from rest_framework.exceptions import ValidationError
 from faker import Faker
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -20,7 +21,7 @@ class RegisterView(generics.CreateAPIView):
             return StudentSerializer
         elif role == '선생님':
             return TeacherSerializer
-        raise ValueError("Invalid user type")
+        raise ValidationError({"detail": "Invalid user type"})
 
     def create(self, request, *args, **kwargs):
         serializer_class = self.get_serializer_class()
@@ -67,8 +68,7 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
             return Student
         elif role == '선생님':
             return Teacher
-        else:
-            raise ValueError("Invalid user role")
+        raise ValidationError({"detail": "Invalid user type"})
 
     def get_serializer_class(self):
         pk = self.kwargs.get('pk')
@@ -81,8 +81,7 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
             return StudentSerializer
         elif role == '선생님':
             return TeacherSerializer
-        else:
-            raise ValueError("Invalid user role")
+        raise ValidationError({"detail": "Invalid user type"})
     
     def get(self, request, *args, **kwargs):
             return super().get(request, *args, **kwargs)
