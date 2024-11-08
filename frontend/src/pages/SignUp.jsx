@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 
 import scholpionImage from "../assets/scholpion.png";
+import { useState } from "react";
 
 const SignUp = () => {
   document.body.style.overflow = "hidden";

@@ -35,9 +35,9 @@ const Home = () => {
       setIsToken(true);
       nav("/", { replac: true });
     }
-  });
+  }, [nav]);
 
-  if (isToken === false) return <div>loading...</div>;
+  if (isToken === undefined) return <div>loading...</div>;
 
   const user = JSON.parse(sessionStorage.getItem("user"));
   const userFirstName = user.firstName;
@@ -53,9 +53,10 @@ const Home = () => {
     sessionStorage.clear();
     nav("/login");
   };
-  console.log(userFirstName);
-  console.log(userSecondName);
-  console.log(userEmail);
+
+  const onClickToList = () => {
+    nav("/testlist");
+  };
 
   document.body.style.overflow = "hidden";
   return (
@@ -144,6 +145,7 @@ const Home = () => {
           <Button
             color="gray"
             variant="contained"
+            onClick={onClickToList}
             style={{
               minWidth: "200px",
               minHeight: "100px",
