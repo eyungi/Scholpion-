@@ -13,6 +13,7 @@ import {
 import scholpionImage from "../assets/scholpion.png";
 
 const SignUp = () => {
+  document.body.style.overflow = "hidden";
   return (
     <div>
       <Grid2 container spacing={2}>
