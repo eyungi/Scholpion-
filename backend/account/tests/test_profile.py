@@ -7,7 +7,7 @@ class ProfileTestCase(APITestCase):
     def setUp(self):
         # 테스트용 유저 생성
         self.moke_user = create_moke_user()
-        uid = User.objects.all().get(email=self.moke_user.email).uid
+        uid = User.objects.get(email=self.moke_user.email).uid
         self.url = f'/users/{uid}/'
         self.client.force_authenticate(user=self.moke_user)
 
@@ -42,7 +42,7 @@ class ProfileTestCase(APITestCase):
         response = self.client.patch(self.url, {
             "password": "logintest"
         })
-        updated_user = User.objects.all().get(email=self.moke_user.email)
+        updated_user = User.objects.get(email=self.moke_user.email)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertNotEqual("logintest", updated_user.password)
 

@@ -12,7 +12,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
+    queryset = User.objects.
     def get_serializer_class(self):
         role = self.request.data.get('role')
         if role == '학생':
