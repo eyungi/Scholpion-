@@ -7,6 +7,7 @@ from .permissions import IsOwnerOreadOnly
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainPairSerializer
+from faker import Faker
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -101,6 +102,13 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
     
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.is_active = False
+        instance.is_active = False # DB에서 완전히 삭제하는 대신 접근을 막음
+
+        fake = Faker()
+        random_email = fake.email() # 같은 이메일로 재가입 가능하게 랜덤 이메일로 수정
+        while (User.objects.filter(email=random_email)):
+            random_email = fake.email()
+        instance.email = random_email
+        instance.set_unusable_password()
         instance.save()
         return Response({"message: 회원 탈퇴가 완료되었습니다"}, status=status.HTTP_204_NO_CONTENT)
