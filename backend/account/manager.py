@@ -1,9 +1,5 @@
 from django.contrib.auth.base_user import BaseUserManager
 
-
-# Create your manager here.
-
-
 class UserManager(BaseUserManager):
 
     def create_user(self, email, name, password=None):
