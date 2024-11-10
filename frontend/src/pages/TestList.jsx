@@ -1,13 +1,20 @@
 import { Container, Box, Stack, Button, Typography } from "@mui/material";
 import testArray from "./../MockTestData";
+import { useNavigate } from "react-router-dom";
 
 const TestList = () => {
+  const nav = useNavigate();
+
   return (
     <div>
-      <Container maxWidth="md">
+      <Container
+        maxWidth="md"
+        sx={{ display: "flex", flexDirection: "column" }}
+      >
         <Box
           sx={{
-            height: "100vh",
+            backgroundColor: "white",
+            height: "85vh",
             display: "flex",
             flexDirection: "column",
             justifyContent: "flex-start", // 수평 중앙 정렬
@@ -32,12 +39,26 @@ const TestList = () => {
                   color: "black",
                 }}
                 key={item.id}
+                onClick={() => nav(`/test/${item.id}`)}
               >
                 {item.name}
               </Button>
             ))}
           </Stack>
         </Box>
+        <Button
+          variant="contained"
+          sx={{
+            mt: "20px",
+            backgroundColor: "#f1f3f4",
+            color: "gray",
+            minWidth: "400px",
+            alignSelf: "center",
+          }}
+          onClick={() => nav("/")}
+        >
+          홈으로
+        </Button>
       </Container>
     </div>
   );

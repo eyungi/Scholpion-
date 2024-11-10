@@ -35,9 +35,9 @@ const Home = () => {
       setIsToken(true);
       nav("/", { replac: true });
     }
-  }, [nav]);
+  }, []);
 
-  if (isToken === undefined) return <div>loading...</div>;
+  if (isToken === false) return <div>loading...</div>;
 
   const user = JSON.parse(sessionStorage.getItem("user"));
   const userFirstName = user.firstName;
