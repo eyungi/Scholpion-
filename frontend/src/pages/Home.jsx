@@ -169,6 +169,7 @@ const Home = () => {
               fontSize: "24px",
               backgroundColor: "#d3d3d3",
             }}
+            onClick={() => nav("/resultlist")}
           >
             <img
               src={checkGrade}

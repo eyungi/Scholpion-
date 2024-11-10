@@ -6,6 +6,7 @@ import ForgotPwd from "./pages/ForgotPwd";
 import TestList from "./pages/TestList";
 import Test from "./pages/Test";
 import TestDone from "./pages/TestDone";
+import ResultList from "./pages/ResultList";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/testlist" element={<TestList />} />
         <Route path="/test/:id" element={<Test />} />
         <Route path="/done" element={<TestDone />} />
+        <Route path="/resultlist" element={<ResultList />} />
         <Route path="/forgotpwd" element={<ForgotPwd />} />
       </Routes>
     </>
