@@ -41,7 +41,7 @@ const ResultList = () => {
                   justifyContent: "space-between",
                 }}
                 key={item.id}
-                onClick={() => nav(`/test/${item.id}`)}
+                onClick={() => console.log(`${item.name}테스트 화면`)}
               >
                 <Box sx={{ textAlign: "left" }}>
                   <Typography variant="h5">{item.name}</Typography>
