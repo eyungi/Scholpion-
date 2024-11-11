@@ -6,12 +6,10 @@ from .serializers import StudentSerializer, TeacherSerializer
 from .permissions import IsOwnerOreadOnly
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import CustomTokenObtainPairSerializer
 from rest_framework.exceptions import ValidationError
 from faker import Faker
-
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -28,12 +26,8 @@ class RegisterView(generics.CreateAPIView):
         serializer = serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        token = RefreshToken.for_user(user)  # JWT 토큰 생성
 
-        # 커스텀 토큰 생성
-        token_serializer = CustomTokenObtainPairSerializer(data={'email': user.email, 'password': request.data['password']})
-        token_serializer.is_valid(raise_exception=True)
-        token = token_serializer.validated_data
-        
         if (hasattr(user, 'student')):
             role = '학생'
         elif (hasattr(user, 'teacher')):
@@ -47,17 +41,17 @@ class RegisterView(generics.CreateAPIView):
                 "role": role
             },
             "token": {
-                "access": str(token['access']),
-                "refresh": str(token['refresh']),
+                "access": str(token.access_token),
+                "refresh": str(token),
             }
         }
 
         return Response(response_data, status=status.HTTP_201_CREATED)
-    
-class UserView(generics.RetrieveUpdateDestroyAPIView):
+
+class UserView(APIView):
     permission_classes = [IsOwnerOreadOnly]
 
-    def get_queryset(self):
+    def get_object_and_serializer(self):
         pk = self.kwargs.get('pk')
         user = get_object_or_404(User, pk=pk)
         if (hasattr(user, 'student')):
@@ -65,49 +59,49 @@ class UserView(generics.RetrieveUpdateDestroyAPIView):
         elif (hasattr(user, 'teacher')):
             role = '선생님'
         if role == '학생':
-            return Student
+            return user.student, StudentSerializer
         elif role == '선생님':
-            return Teacher
+            return user.teacher, TeacherSerializer
         raise ValidationError({"detail": "Invalid user type"})
+
+    def get_object(self):
+        instance, _ = self.get_object_and_serializer()
+        self.check_object_permissions(self.request, instance)
+        return instance
+
+    def get_serializer(self, instance):
+        _, serializer_class = self.get_object_and_serializer()
+        return serializer_class(instance)
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+    
+class ProfileView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    def get_object_and_serializer_class(self):
+        user = self.request.user
+        if (hasattr(user, 'student')):
+            role = '학생'
+        elif (hasattr(user, 'teacher')):
+            role = '선생님'
+        if role == '학생':
+            return user.student, StudentSerializer
+        elif role == '선생님':
+            return user.teacher, TeacherSerializer
+        raise ValidationError({"detail": "Invalid user type"})
+
+    def get_object(self):
+        instance, _ = self.get_object_and_serializer_class()
+        return instance
 
     def get_serializer_class(self):
-        pk = self.kwargs.get('pk')
-        user = get_object_or_404(User, pk=pk)
-        if (hasattr(user, 'student')):
-            role = '학생'
-        elif (hasattr(user, 'teacher')):
-            role = '선생님'
-        if role == '학생':
-            return StudentSerializer
-        elif role == '선생님':
-            return TeacherSerializer
-        raise ValidationError({"detail": "Invalid user type"})
-    
-    def get(self, request, *args, **kwargs):
-            return super().get(request, *args, **kwargs)
+        _, serializer_class = self.get_object_and_serializer_class()
+
+        return serializer_class
     
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', True)  # 일부만 수정 허용
-        instance = self.get_object()
-
-        # email은 변경 불가
         if 'email' in request.data:
             return Response({"error: 변경할 수 없는 필드를 포함하고 있습니다."}, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.is_active = False # DB에서 완전히 삭제하는 대신 접근을 막음
-
-        fake = Faker()
-        random_email = fake.email() # 같은 이메일로 재가입 가능하게 랜덤 이메일로 수정
-        while (User.objects.filter(email=random_email)):
-            random_email = fake.email()
-        instance.email = random_email
-        instance.set_unusable_password()
-        instance.save()
-        return Response({"message: 회원 탈퇴가 완료되었습니다"}, status=status.HTTP_204_NO_CONTENT)
+        return super().update(request, *args, **kwargs)
