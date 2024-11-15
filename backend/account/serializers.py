@@ -6,13 +6,6 @@ from .models import User, Teacher, Student
 # serializers.py
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['uid'] = str(user.uid)
-        return token
-
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required = True, validators=[UniqueValidator(queryset=User.objects.all())])
     name = serializers.CharField(required = True)
