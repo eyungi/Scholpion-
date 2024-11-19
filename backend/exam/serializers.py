@@ -47,9 +47,8 @@ class ProbSerializer(WritableNestedModelSerializer):
         if category_data:
             subject = category_data['subject']
             category_name = category_data['category_name']
-        category, _ = Category.objects.get_or_create(subject=subject, category_name=category_name, creator=self.context['request'].user.teacher) # 존재하는 카테고라면 가져오고 아니라면 생성
-        instance.category = category  # 객체 자체를 수정
-
+            category, _ = Category.objects.get_or_create(subject=subject, category_name=category_name, creator=self.context['request'].user.teacher) # 존재하는 카테고라면 가져오고 아니라면 생성
+            instance.category = category  # 객체 자체를 수정
         return super().update(instance, validated_data)
 
 # 시험지 시리얼라이저
