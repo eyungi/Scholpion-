@@ -1,5 +1,5 @@
 from rest_framework_nested import routers
-from .views import ExamView, ProbView
+from .views import ExamView, ProbView, SolvedExamView, CommentView
 
 router = routers.DefaultRouter()
 
@@ -8,6 +8,11 @@ router.register(r'exams', ExamView)
 # exams/<str:pk>/problems/
 exam_router = routers.NestedDefaultRouter(router, r'exams', lookup='exam')
 exam_router.register(r'problems', ProbView, basename='exam-problems')
+# solved-exams/
+router.register(r'solved-exams', SolvedExamView)
+# solved-exams/<str:pk>/comments/
+solved_exam_router = routers.NestedDefaultRouter(router, r'solved-exams', lookup='solved_exam')
+solved_exam_router.register(r'comments', CommentView, basename='solved-exam-comments')
 
 # urlpatterns에 두 라우터를 합침
-urlpatterns = router.urls + exam_router.urls
+urlpatterns = router.urls + exam_router.urls + solved_exam_router.urls
