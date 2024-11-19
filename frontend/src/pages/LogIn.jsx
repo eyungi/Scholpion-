@@ -9,6 +9,8 @@ import {
 import { useState } from "react";
 import scholpionImage from "../assets/scholpion.png";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Cookies from "js-cookie";
 
 function LogIn() {
   const [email, setEmail] = useState("");
@@ -23,23 +25,50 @@ function LogIn() {
     setPassword(e.target.value);
   };
 
-  const mockLoginApi = async (email, password) => {
-    if (email === "dldbsrl@scholpion.com" && password === "1234") {
-      return {
-        token: "fake-jwt-token",
-        user: { email, firstName: "윤기", secondName: "이" },
-      };
-    } else {
-      throw new Error("Invalid credentials");
+  // const mockLoginApi = async (email, password) => {
+  //   if (email === "dldbsrl@scholpion.com" && password === "1234") {
+  //     return {
+  //       token: "fake-jwt-token",
+  //       user: { email, firstName: "윤기", secondName: "이" },
+  //     };
+  //   } else {
+  //     throw new Error("Invalid credentials");
+  //   }
+  // };
+
+  const handleLogin = async () => {
+    try {
+      console.log("보내는 데이터:", { email, password });
+      const response = await axios.post("http://127.0.0.1:8000/users/token/", {
+        email,
+        password,
+      });
+      console.log(response.data);
+      const { access, refresh } = response.data;
+      Cookies.set("access_token", access, {
+        expires: 1,
+        secure: true,
+        sameSite: "Strict",
+        paht: "/",
+      });
+      Cookies.set("refresh_token", refresh, {
+        expires: 1,
+        secure: true,
+        sameSite: "Strict",
+        paht: "/",
+      });
+      nav("/");
+    } catch (error) {
+      console.error("로그인 중 오류 발생:", error);
     }
   };
 
-  const handleLogin = async () => {
-    const response = await mockLoginApi(email, password);
-    sessionStorage.setItem("token", response.token);
-    sessionStorage.setItem("user", JSON.stringify(response.user));
-    nav("/");
-  };
+  // const handleLogin = async () => {
+  //   const response = await mockLoginApi(email, password);
+  //   sessionStorage.setItem("token", response.token);
+  //   sessionStorage.setItem("user", JSON.stringify(response.user));
+  //   nav("/");
+  // };
 
   document.body.style.overflow = "hidden";
   return (

@@ -1,10 +1,46 @@
 import { Container, Box, Stack, Button, Typography } from "@mui/material";
 import testArray from "./../MockTestData";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
 const TestList = () => {
   const nav = useNavigate();
+  const [exams, setExams] = useState([]);
+  const [load, setLoad] = useState(true);
+  const [error, setError] = useState(false);
 
+  useEffect(() => {
+    const accessToken = Cookies.get("access_token");
+    if (!accessToken) {
+      setError("인증이 필요합니다. 로그인하세요.");
+      setLoading(false);
+      return;
+    }
+    const getExams = async () => {
+      try {
+        setLoad(true);
+        const response = await axios.get("http://127.0.0.1:8000/exams/", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        setExams(response.data);
+      } catch (error) {
+        setError(error.message || "데이터를 가져오지 못했습니다");
+      } finally {
+        setLoad(false);
+      }
+    };
+
+    getExams();
+  }, []);
+
+  if (load) return <div>loading...</div>;
+  if (error) return <div>{"Error :("}</div>;
+
+  console.log(exams);
   return (
     <div>
       <Container
@@ -28,7 +64,7 @@ const TestList = () => {
             응시할 시험을 선택해주세요
           </Typography>
           <Stack spacing={2} sx={{ mt: "20px" }}>
-            {testArray.map((item) => (
+            {exams.map((item) => (
               <Button
                 variant="contained"
                 sx={{
@@ -38,10 +74,10 @@ const TestList = () => {
                   backgroundColor: "white",
                   color: "black",
                 }}
-                key={item.id}
-                onClick={() => nav(`/test/${item.id}`)}
+                key={item.exam_id}
+                onClick={() => nav(`/test/${item.exam_id}`)}
               >
-                {item.name}
+                {item.exam_name}
               </Button>
             ))}
           </Stack>

@@ -5,7 +5,7 @@ const testArray = [
     problems: [
       {
         //1번문제
-        type: 0,
+        type: 0, // type 0 : 객관식 , type 1 : 단답식
         number: 1,
         content: "A = 10, B = 20, A+B = ?",
         selection: [

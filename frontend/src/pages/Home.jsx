@@ -14,11 +14,14 @@ import tryTest from "../assets/tryTest.png";
 import checkGrade from "../assets/checkGrade.png";
 import logout from "../assets/logout.png";
 import profile from "../assets/profile.png";
+import Cookies from "js-cookie";
+import axios from "axios";
 
 const Home = () => {
   const nav = useNavigate();
   const [myPageOpen, setMyPageOpen] = useState(false);
   const [isToken, setIsToken] = useState(false);
+  const [userInfo, setUserInfo] = useState({});
 
   const handleTooltipClose = () => {
     setMyPageOpen(false);
@@ -28,29 +31,55 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
+    const token = Cookies.get("access_token");
     if (!token) {
       nav("/login");
     } else {
       setIsToken(true);
       nav("/", { replac: true });
+      axios({
+        method: "get",
+        maxBodyLength: Infinity,
+        url: "http://127.0.0.1:8000/users/me/", // 실제 유저 ID 사용
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((response) => {
+          setUserInfo(response.data);
+          console.log("유저정보", userInfo);
+        })
+        .catch((error) => {
+          console.error(
+            "유저 정보 요청 실패:",
+            error.response?.data || error.message
+          );
+          Cookies.remove("access_token");
+          Cookies.remove("refresh_token");
+          nav("/login");
+        });
+      //nav("/");
     }
   }, []);
 
   if (isToken === false) return <div>loading...</div>;
 
-  const user = JSON.parse(sessionStorage.getItem("user"));
-  const userFirstName = user.firstName;
-  const userSecondName = user.secondName;
+  //const user = JSON.parse(sessionStorage.getItem("user"));
+  //const userFirstName = user.firstName;
+  //const userSecondName = user.secondName;
+  //const userEmail = user.email;
 
-  const userEmail = user.email;
+  // const userFirstName = "윤기";
+  // const userSecondName = "이";
+  // const userEmail = "dldbsrl0221@scholpion.com";
 
   const onClickName = () => {
     console.log("이름 클릭함");
   };
 
   const onClickLogout = () => {
-    sessionStorage.clear();
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
     nav("/login");
   };
 
@@ -85,7 +114,7 @@ const Home = () => {
                   <Box
                     sx={{ p: 1, boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.1)" }}
                   >
-                    학생
+                    {userInfo.grade !== undefined ? "학생" : "선생님"}
                   </Box>
                   <Box sx={{ p: 1, display: "flex", alignItems: "center" }}>
                     <img
@@ -124,10 +153,8 @@ const Home = () => {
                 onClick={handleTooltipOpen}
                 style={{ display: "flex", cursor: "pointer" }}
               >
-                <Avatar>{userSecondName}</Avatar>
-                <div style={{ padding: "6px" }}>
-                  {userSecondName + userFirstName}
-                </div>
+                <Avatar>{userInfo.name ? userInfo.name[0] : "김"}</Avatar>
+                <div style={{ padding: "6px" }}>{userInfo.name}</div>
               </div>
             </Tooltip>
           </ClickAwayListener>

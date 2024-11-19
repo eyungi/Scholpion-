@@ -13,7 +13,7 @@ const TestDone = () => {
         justifyContent: "center",
       }}
     >
-      <Typography variant="h4" align="center">
+      <Typography mb="10px" variant="h4" align="center">
         제출 완료
         <br /> 고생하셨습니다
       </Typography>
