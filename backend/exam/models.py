@@ -24,7 +24,6 @@ class Exam(models.Model):
     creator = models.ForeignKey(Teacher, null=True, on_delete=models.SET_NULL)
 
     exam_name = models.CharField(max_length=255)
-    explanation = models.CharField(max_length=512, null=True)
 
 class Prob(models.Model):
     prob_id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)

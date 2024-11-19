@@ -1,6 +1,5 @@
 moke_exam = {
     'exam_name': "테스트용 시험지",
-    'explanation': "테스트입니다"
 }
 
 moke_prob = {
