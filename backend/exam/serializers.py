@@ -21,7 +21,7 @@ class ProbSerializer(WritableNestedModelSerializer):
 
     class Meta:
         model = Prob
-        fields = ('prob_id', 'prob_seq', 'question', 'answer', 'options', 'category')
+        fields = ('prob_id', 'prob_seq', 'question', 'answer', 'options', 'category', 'difficulty')
 
     def create(self, validated_data):
         category_data = validated_data.pop('category')

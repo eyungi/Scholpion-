@@ -1,5 +1,6 @@
 from django.db import models
 from account.models import Student, Teacher, User
+from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 
 class Subject(models.Model):
@@ -34,6 +35,7 @@ class Prob(models.Model):
     question = models.TextField()
     answer = models.CharField(max_length=512)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    difficulty = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
 
     class Meta:
         constraints = [
