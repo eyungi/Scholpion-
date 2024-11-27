@@ -43,6 +43,8 @@ class SolvedExamPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         if view.__class__.__name__ == "SolvedExamView":
+            if request.method in permissions.SAFE_METHODS:
+                return True
             if request.method in ['PUT', 'PATCH']: # SolvedExam의 feedback필드 수정은 선생님만 가능
                 if (obj.teacher == None): # 피드백이 할당되지 않은 시험지라면 아무 선생님이나 수정 가능
                     return True
