@@ -7,6 +7,7 @@ import TestList from "./pages/TestList";
 import Test from "./pages/Test";
 import TestDone from "./pages/TestDone";
 import ResultList from "./pages/ResultList";
+import Review from "./pages/Review";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/test/:id" element={<Test />} />
         <Route path="/done" element={<TestDone />} />
         <Route path="/resultlist" element={<ResultList />} />
+        <Route path="/review/:id" element={<Review />} />
         <Route path="/forgotpwd" element={<ForgotPwd />} />
       </Routes>
     </>

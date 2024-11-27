@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import testArray from "./../MockTestData";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Grid2,
   Container,
@@ -14,9 +14,14 @@ import {
   DialogContent,
   DialogContentText,
   TextField,
+  ButtonGroup,
 } from "@mui/material";
 import axios from "axios";
 import Cookies from "js-cookie";
+
+import eraser from "../assets/eraser.png";
+import pencil from "../assets/pencil.png";
+import reset from "../assets/reset.png";
 
 const Test = () => {
   const params = useParams();
@@ -28,10 +33,22 @@ const Test = () => {
   const [error, setError] = useState(false);
   const [problems, setProblems] = useState([]);
   const [load, setLoad] = useState(true);
+  //시간관련
+  const [sec, setSec] = useState(0);
+  const [min, setMin] = useState(0);
+  const [hour, setHour] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const elapsedTimeRef = useRef(0);
+  const time = useRef(0);
+  const startTimeRef = useRef(Date.now());
+  const timerId = useRef(null);
+  //그림판 관련
+  const canvasRef = useRef(null);
+  const isDrawingRef = useRef(false);
+  const [isEraserActive, setIsEraserActive] = useState(false);
 
   useEffect(() => {
     const accessToken = Cookies.get("access_token");
-    console.log("Test params.id:", params.id);
     if (!accessToken) {
       setError("인증이 필요합니다. 로그인하세요.");
       setLoading(false);
@@ -61,12 +78,75 @@ const Test = () => {
     getProblems();
   }, [params.id]);
 
+  useEffect(() => {
+    const initializeCanvas = () => {
+      if (!canvasRef.current) {
+        return;
+      }
+
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        return;
+      }
+
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 2;
+    };
+
+    const intervalId = setInterval(() => {
+      if (canvasRef.current) {
+        initializeCanvas();
+        clearInterval(intervalId);
+      }
+    }, 50);
+  }, []);
+
+  //시간 관련 메소드
+  const startTimer = () => {
+    clearInterval(timerId.current);
+
+    startTimeRef.current = Date.now() - elapsedTimeRef.current * 1000;
+    timerId.current = setInterval(() => {
+      const elapsedTime = Math.floor(
+        (Date.now() - startTimeRef.current) / 1000
+      );
+
+      elapsedTimeRef.current = elapsedTime;
+      setHour(Math.floor(elapsedTime / 3600));
+      setMin(Math.floor((elapsedTime % 3600) / 60));
+      setSec(elapsedTime % 60);
+    }, 1000);
+  };
+
+  useEffect(() => {
+    startTimer();
+
+    return () => clearInterval(timerId.current);
+  }, []);
+
+  const stopTimer = () => {
+    clearInterval(timerId.current);
+    setIsPaused(true);
+  };
+
+  const resumeTimer = () => {
+    setIsPaused(true);
+    startTimer();
+  };
+
+  //문제 관련 메소드
   const problem = problems.find(
     (item) => Number(item.prob_seq) === Number(number)
   );
-
-  //console.log(problems);
-  //console.log(problem);
 
   const onClickNext = () => {
     setAnswerSheet((prev) => [...prev, { number, answer }]);
@@ -86,6 +166,71 @@ const Test = () => {
   if (!problem || !problem.options) {
     return <div>현재 문제를 찾을 수 없습니다.</div>;
   }
+
+  //풀이 메모장 관련
+  const startDrawing = (e) => {
+    if (!canvasRef.current) {
+      return;
+    }
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) {
+      return;
+    }
+    isDrawingRef.current = true;
+    if (!isEraserActive) {
+      ctx.beginPath();
+      ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+    }
+  };
+
+  const draw = (e) => {
+    if (!isDrawingRef.current) return;
+    if (!canvasRef.current) {
+      return;
+    }
+    const ctx = canvasRef.current.getContext("2d");
+    if (!ctx) {
+      return;
+    }
+    if (isEraserActive) {
+      ctx.clearRect(
+        e.nativeEvent.offsetX - 10,
+        e.nativeEvent.offsetY - 10,
+        30,
+        30
+      );
+    } else {
+      ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+      ctx.stroke();
+    }
+  };
+
+  const stopDrawing = () => {
+    isDrawingRef.current = false;
+  };
+
+  const saveCanvas = () => {
+    const canvas = canvasRef.current;
+    const imageURL = canvas.toDataURL("image/png");
+
+    //아래는 api에서는 지워도 된다.
+    const downloadLink = document.createElement("a");
+    downloadLink.href = imageURL;
+    downloadLink.download = "canvas_image.png";
+    downloadLink.click();
+  };
+
+  const resetCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const toggleEraser = () => {
+    setIsEraserActive((prev) => !prev);
+  };
 
   return (
     <Grid2 container spacing={2}>
@@ -161,31 +306,39 @@ const Test = () => {
             position: "absolute",
             bottom: 20,
             display: "flex",
-            justifyContent: "flex-end",
+            justifyContent: "space-between",
           }}
         >
-          {problem.number !== 1 && (
-            <Button variant="contained" onClick={() => setNumber(number - 1)}>
-              이전
-            </Button>
-          )}
-          {problem.prob_seq === problems.length ? (
-            <Button
-              variant="contained"
-              sx={{ marginLeft: "5px" }}
-              onClick={() => setOpen(true)}
-            >
-              제출
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              sx={{ marginLeft: "5px" }}
-              onClick={() => onClickNext()}
-            >
-              다음
-            </Button>
-          )}
+          <Typography sx={{ color: "skyblue" }}>
+            응시시간 : {hour}시간 {min}분 {sec}초
+          </Typography>
+          <Box>
+            {problem.number !== 1 && (
+              <Button variant="contained" onClick={() => setNumber(number - 1)}>
+                이전
+              </Button>
+            )}
+            {problem.prob_seq === problems.length ? (
+              <Button
+                variant="contained"
+                sx={{ marginLeft: "5px" }}
+                onClick={() => {
+                  stopTimer();
+                  setOpen(true);
+                }}
+              >
+                제출
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                sx={{ marginLeft: "5px" }}
+                onClick={() => onClickNext()}
+              >
+                다음
+              </Button>
+            )}
+          </Box>
         </Container>
       </Grid2>
       <Grid2
@@ -199,12 +352,66 @@ const Test = () => {
       >
         <Box
           sx={{
+            width: "100%",
+            height: "100%",
+            position: "relative",
             textAlign: "center",
-            fontSize: "50px",
-            color: "rgba(128, 128, 128, 0.5)",
+            fontSize: "20px",
           }}
         >
-          풀이과정
+          <ButtonGroup>
+            <Button
+              variant="contained"
+              color="white"
+              onClick={toggleEraser}
+              sx={{
+                minWidth: "30px", // 버튼 크기 설정
+                height: "30px",
+              }}
+            >
+              <img
+                src={isEraserActive ? pencil : eraser}
+                style={{
+                  width: "20px", // 이미지 크기 조정
+                  height: "20px",
+                }}
+              />
+            </Button>
+            <Button
+              variant="contained"
+              color="white"
+              sx={{
+                padding: "10px", // 버튼 내부 여백 조정
+                minWidth: "30px", // 버튼 크기 설정
+                height: "30px",
+              }}
+              onClick={resetCanvas}
+            >
+              <img
+                src={reset}
+                style={{
+                  width: "20px", // 이미지 크기 조정
+                  height: "20px",
+                }}
+              />
+            </Button>
+            <Button variant="contained" color="secondary" onClick={saveCanvas}>
+              Save
+            </Button>
+          </ButtonGroup>
+          <canvas
+            ref={canvasRef}
+            style={{
+              width: "100%",
+              height: "100%",
+              border: "1px solid rgba(0,0,0,0.1)",
+              display: "black",
+            }}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+          />
         </Box>
       </Grid2>
       <Dialog open={open} onClose={() => setOpen(false)}>
@@ -212,7 +419,13 @@ const Test = () => {
           제출하시겠습니까?
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)} sx={{ color: "red" }}>
+          <Button
+            onClick={() => {
+              resumeTimer();
+              setOpen(false);
+            }}
+            sx={{ color: "red" }}
+          >
             아니요
           </Button>
           <Button onClick={onSubmit}>네</Button>
