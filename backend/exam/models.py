@@ -63,6 +63,7 @@ class SolvedExam(models.Model):
     feedback = models.TextField(null=True, blank=True)
     time = models.DurationField()
     score = models.IntegerField(null=True)
+    solved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
