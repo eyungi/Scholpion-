@@ -16,7 +16,7 @@ import logout from "../assets/logout.png";
 import profile from "../assets/profile.png";
 import Cookies from "js-cookie";
 import axios from "axios";
-
+import axiosInstance from "../axiosInstance";
 const Home = () => {
   const nav = useNavigate();
   const [myPageOpen, setMyPageOpen] = useState(false);
@@ -37,14 +37,8 @@ const Home = () => {
     } else {
       setIsToken(true);
       nav("/", { replac: true });
-      axios({
-        method: "get",
-        maxBodyLength: Infinity,
-        url: "http://127.0.0.1:8000/users/me/", // 실제 유저 ID 사용
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      axiosInstance
+        .get("/users/me")
         .then((response) => {
           setUserInfo(response.data);
           console.log("유저정보", userInfo);

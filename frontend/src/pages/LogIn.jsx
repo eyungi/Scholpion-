@@ -49,13 +49,13 @@ function LogIn() {
         expires: 1,
         secure: true,
         sameSite: "Strict",
-        paht: "/",
+        path: "/",
       });
       Cookies.set("refresh_token", refresh, {
         expires: 1,
         secure: true,
         sameSite: "Strict",
-        paht: "/",
+        path: "/",
       });
       nav("/");
     } catch (error) {

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
-
+import axiosInstance from "../axiosInstance";
 const TestList = () => {
   const nav = useNavigate();
   const [exams, setExams] = useState([]);
@@ -21,11 +21,7 @@ const TestList = () => {
     const getExams = async () => {
       try {
         setLoad(true);
-        const response = await axios.get("http://127.0.0.1:8000/exams/", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
+        const response = await axiosInstance.get("/exams/");
         setExams(response.data);
       } catch (error) {
         setError(error.message || "데이터를 가져오지 못했습니다");

@@ -22,6 +22,7 @@ import Cookies from "js-cookie";
 import eraser from "../assets/eraser.png";
 import pencil from "../assets/pencil.png";
 import reset from "../assets/reset.png";
+import axiosInstance from "../axiosInstance";
 
 const Test = () => {
   const params = useParams();
@@ -48,23 +49,11 @@ const Test = () => {
   const [isEraserActive, setIsEraserActive] = useState(false);
 
   useEffect(() => {
-    const accessToken = Cookies.get("access_token");
-    if (!accessToken) {
-      setError("인증이 필요합니다. 로그인하세요.");
-      setLoading(false);
-      return;
-    }
-
     const getProblems = async () => {
       try {
         setLoad(true);
-        const response = await axios.get(
-          `http://127.0.0.1:8000/exams/${params.id}/problems/`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
+        const response = await axiosInstance.get(
+          `/exams/${params.id}/problems`
         );
         setProblems(response.data);
         console.log("문제들", response.data);
@@ -394,9 +383,6 @@ const Test = () => {
                   height: "20px",
                 }}
               />
-            </Button>
-            <Button variant="contained" color="secondary" onClick={saveCanvas}>
-              Save
             </Button>
           </ButtonGroup>
           <canvas
