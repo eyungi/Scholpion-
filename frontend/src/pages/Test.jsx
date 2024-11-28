@@ -25,15 +25,21 @@ import reset from "../assets/reset.png";
 import axiosInstance from "../axiosInstance";
 
 const Test = () => {
+  //문제관련
   const params = useParams();
   const [number, setNumber] = useState(1);
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const [answer, setAnswer] = useState("");
-  const [answerSheet, setAnswerSheet] = useState([]);
+  const [answerSheet, setAnswerSheet] = useState({
+    exam: "",
+    time: "",
+    problems: [],
+  });
   const [error, setError] = useState(false);
   const [problems, setProblems] = useState([]);
   const [load, setLoad] = useState(true);
+
   //시간관련
   const [sec, setSec] = useState(0);
   const [min, setMin] = useState(0);
@@ -43,10 +49,13 @@ const Test = () => {
   const time = useRef(0);
   const startTimeRef = useRef(Date.now());
   const timerId = useRef(null);
+
   //그림판 관련
-  const canvasRef = useRef(null);
+  const canvasRef = useRef([]);
   const isDrawingRef = useRef(false);
   const [isEraserActive, setIsEraserActive] = useState(false);
+
+  const examId = params.id;
 
   useEffect(() => {
     const getProblems = async () => {
@@ -56,6 +65,20 @@ const Test = () => {
           `/exams/${params.id}/problems`
         );
         setProblems(response.data);
+
+        const initialProblems = response.data.map((problem) => ({
+          prob: problem.prob_id,
+          response: "",
+          solution: "", // 초기 캔버스 데이터를 비워둠
+        }));
+        const updatedAnswerSheet = {
+          exam: params.id,
+          time: "",
+          problems: initialProblems,
+        };
+
+        console.log("초기화된 answerSheet:", updatedAnswerSheet);
+        setAnswerSheet(updatedAnswerSheet);
         console.log("문제들", response.data);
       } catch (error) {
         setError(err.message || "데이터를 가져오지 못했습니다");
@@ -65,39 +88,45 @@ const Test = () => {
     };
 
     getProblems();
-  }, [params.id]);
+  }, []);
 
   useEffect(() => {
-    const initializeCanvas = () => {
-      if (!canvasRef.current) {
-        return;
-      }
+    const initializeCanvas = (canvas, index) => {
+      if (!canvas) return;
 
-      const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
-      if (!ctx) {
-        return;
+      if (!ctx) return;
+
+      const isCanvasEmpty = () => {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        return imageData.data.every((value, idx) => {
+          if ((idx + 1) % 4 === 0) return value === 0; // Alpha 값만 확인
+          return true;
+        });
+      };
+
+      if (isCanvasEmpty()) {
+        // 캔버스 초기화 및 스타일 설정
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        // ctx.fillStyle = "#ffffff";
+        // ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
       }
-
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.lineJoin = "round";
-      ctx.lineCap = "round";
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 2;
     };
 
-    const intervalId = setInterval(() => {
-      if (canvasRef.current) {
-        initializeCanvas();
-        clearInterval(intervalId);
-      }
-    }, 50);
-  }, []);
+    //각 캔버스에 대해 초기화
+    // canvasRef.current.forEach((canvas, index) => {
+    //   initializeCanvas(canvas, index);
+    // });
+    const currentCanvas = canvasRef.current[number - 1];
+    if (currentCanvas) {
+      initializeCanvas(currentCanvas);
+    }
+  }, [problems, number]);
 
   //시간 관련 메소드
   const startTimer = () => {
@@ -137,18 +166,63 @@ const Test = () => {
     (item) => Number(item.prob_seq) === Number(number)
   );
 
+  const problemId = problem?.prob_id;
+
   const onClickNext = () => {
-    setAnswerSheet((prev) => [...prev, { number, answer }]);
     setAnswer("");
     setNumber((prev) => prev + 1);
-    console.log(answerSheet);
-    setError(false);
+    console.log("onClickNext-answerSheet : ", answerSheet);
+  };
+
+  const onChangeAnswer = (updatedAnswer) => {
+    setAnswerSheet((prevAnswerSheet) => {
+      const updatedProblems = [...prevAnswerSheet.problems];
+
+      if (updatedProblems[number - 1]) {
+        updatedProblems[number - 1].response = updatedAnswer;
+      }
+
+      return {
+        ...prevAnswerSheet,
+        problems: updatedProblems,
+      };
+    });
   };
 
   const onSubmit = () => {
-    const updatedAnswerSheet = [...answerSheet, { number, answer }];
-    setAnswerSheet(updatedAnswerSheet);
-    console.log("제출:", updatedAnswerSheet);
+    const updatedProblems = [...answerSheet.problems];
+
+    canvasRef.current.forEach((canvas, index) => {
+      if (canvas) {
+        const solutionImg = canvas.toDataURL("image/png");
+        updatedProblems[index].solution = solutionImg;
+
+        //다운로드로 저장되는지 확인
+        // const downloadLink = document.createElement("a");
+        // downloadLink.href = solutionImg;
+        // downloadLink.download = `cavas${index}_image.png`;
+        // downloadLink.click();
+
+        //초기화
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // ctx.fillStyle = "#ffffff";
+        // ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+    });
+
+    const formattedTime = `${String(hour).padStart(2, "0")}:${String(
+      min
+    ).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+
+    const updatedAnswerSheet = {
+      ...answerSheet,
+      time: formattedTime,
+      problems: updatedProblems,
+    };
+
+    console.log("제출", updatedAnswerSheet);
+    axiosInstance.post("/solved-exams/", updatedAnswerSheet);
     nav("/done");
   };
 
@@ -158,10 +232,8 @@ const Test = () => {
 
   //풀이 메모장 관련
   const startDrawing = (e) => {
-    if (!canvasRef.current) {
-      return;
-    }
-    const ctx = canvasRef.current.getContext("2d");
+    const canvas = canvasRef.current[number - 1];
+    const ctx = canvas?.getContext("2d");
     if (!ctx) {
       return;
     }
@@ -174,13 +246,10 @@ const Test = () => {
 
   const draw = (e) => {
     if (!isDrawingRef.current) return;
-    if (!canvasRef.current) {
-      return;
-    }
-    const ctx = canvasRef.current.getContext("2d");
-    if (!ctx) {
-      return;
-    }
+    const canvas = canvasRef.current[number - 1];
+    if (!canvas) return;
+    const ctx = canvas?.getContext("2d");
+    if (!ctx) return;
     if (isEraserActive) {
       ctx.clearRect(
         e.nativeEvent.offsetX - 10,
@@ -189,6 +258,7 @@ const Test = () => {
         30
       );
     } else {
+      ctx.strokeStyle = "black";
       ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
       ctx.stroke();
     }
@@ -198,23 +268,12 @@ const Test = () => {
     isDrawingRef.current = false;
   };
 
-  const saveCanvas = () => {
-    const canvas = canvasRef.current;
-    const imageURL = canvas.toDataURL("image/png");
-
-    //아래는 api에서는 지워도 된다.
-    const downloadLink = document.createElement("a");
-    downloadLink.href = imageURL;
-    downloadLink.download = "canvas_image.png";
-    downloadLink.click();
-  };
-
   const resetCanvas = () => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const canvas = canvasRef.current[number - 1];
+    const ctx = canvas?.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // ctx.fillStyle = "#ffffff";
+    // ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
 
   const toggleEraser = () => {
@@ -258,7 +317,11 @@ const Test = () => {
                     },
                   }}
                   key={item.option_seq}
-                  onClick={() => setAnswer(item.option_seq)}
+                  onClick={() => {
+                    const updatedAnswer = item.option_seq;
+                    setAnswer(updatedAnswer); // 답변 업데이트
+                    onChangeAnswer(updatedAnswer); // `answerSheet` 업데이트
+                  }}
                 >
                   <Avatar
                     sx={{
@@ -284,7 +347,11 @@ const Test = () => {
                 variant="outlined"
                 label="답을 입력하세요"
                 value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
+                onChange={(e) => {
+                  const updatedAnswer = e.target.value;
+                  setAnswer(updatedAnswer);
+                  onChangeAnswer(updatedAnswer);
+                }}
               />
             </Box>
           )}
@@ -354,14 +421,14 @@ const Test = () => {
               color="white"
               onClick={toggleEraser}
               sx={{
-                minWidth: "30px", // 버튼 크기 설정
+                minWidth: "30px",
                 height: "30px",
               }}
             >
               <img
                 src={isEraserActive ? pencil : eraser}
                 style={{
-                  width: "20px", // 이미지 크기 조정
+                  width: "20px",
                   height: "20px",
                 }}
               />
@@ -370,8 +437,8 @@ const Test = () => {
               variant="contained"
               color="white"
               sx={{
-                padding: "10px", // 버튼 내부 여백 조정
-                minWidth: "30px", // 버튼 크기 설정
+                padding: "10px",
+                minWidth: "30px",
                 height: "30px",
               }}
               onClick={resetCanvas}
@@ -379,25 +446,32 @@ const Test = () => {
               <img
                 src={reset}
                 style={{
-                  width: "20px", // 이미지 크기 조정
+                  width: "20px",
                   height: "20px",
                 }}
               />
             </Button>
           </ButtonGroup>
-          <canvas
-            ref={canvasRef}
-            style={{
-              width: "100%",
-              height: "100%",
-              border: "1px solid rgba(0,0,0,0.1)",
-              display: "black",
-            }}
-            onMouseDown={startDrawing}
-            onMouseMove={draw}
-            onMouseUp={stopDrawing}
-            onMouseLeave={stopDrawing}
-          />
+          {problems.map((_, index) => (
+            <canvas
+              key={index}
+              ref={(el) => {
+                if (el) {
+                  canvasRef.current[index] = el;
+                }
+              }}
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "1px solid rgba(0,0,0,0.1)",
+                display: number === index + 1 ? "block" : "none", // 현재 문제에만 캔버스 표시
+              }}
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={stopDrawing}
+              onMouseLeave={stopDrawing}
+            />
+          ))}
         </Box>
       </Grid2>
       <Dialog open={open} onClose={() => setOpen(false)}>

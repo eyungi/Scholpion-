@@ -12,12 +12,6 @@ const TestList = () => {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const accessToken = Cookies.get("access_token");
-    if (!accessToken) {
-      setError("인증이 필요합니다. 로그인하세요.");
-      setLoading(false);
-      return;
-    }
     const getExams = async () => {
       try {
         setLoad(true);

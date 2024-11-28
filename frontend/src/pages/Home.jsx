@@ -58,15 +58,6 @@ const Home = () => {
 
   if (isToken === false) return <div>loading...</div>;
 
-  //const user = JSON.parse(sessionStorage.getItem("user"));
-  //const userFirstName = user.firstName;
-  //const userSecondName = user.secondName;
-  //const userEmail = user.email;
-
-  // const userFirstName = "윤기";
-  // const userSecondName = "이";
-  // const userEmail = "dldbsrl0221@scholpion.com";
-
   const onClickName = () => {
     console.log("이름 클릭함");
   };

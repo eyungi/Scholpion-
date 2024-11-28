@@ -25,17 +25,6 @@ function LogIn() {
     setPassword(e.target.value);
   };
 
-  // const mockLoginApi = async (email, password) => {
-  //   if (email === "dldbsrl@scholpion.com" && password === "1234") {
-  //     return {
-  //       token: "fake-jwt-token",
-  //       user: { email, firstName: "윤기", secondName: "이" },
-  //     };
-  //   } else {
-  //     throw new Error("Invalid credentials");
-  //   }
-  // };
-
   const handleLogin = async () => {
     try {
       console.log("보내는 데이터:", { email, password });
@@ -62,13 +51,6 @@ function LogIn() {
       console.error("로그인 중 오류 발생:", error);
     }
   };
-
-  // const handleLogin = async () => {
-  //   const response = await mockLoginApi(email, password);
-  //   sessionStorage.setItem("token", response.token);
-  //   sessionStorage.setItem("user", JSON.stringify(response.user));
-  //   nav("/");
-  // };
 
   document.body.style.overflow = "hidden";
   return (
