@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from drf_writable_nested import WritableNestedModelSerializer
 from .models import Category, Option, Prob, Exam, SolvedProb, SolvedExam, Comment
+from account.models import User, Teacher, Student
 
 # 카테고리 시리얼라이저
 class CategorySerializer(serializers.ModelSerializer):
@@ -61,9 +62,39 @@ class ExamSerializer(serializers.ModelSerializer):
 
 # 댓글(질의응답) 시리얼라이저
 class CommentSerializer(serializers.ModelSerializer):
+    # list 요청시 내보내는 필드 (모델에 관여하지 않음)
+    author_id = serializers.UUIDField(source='author.uid', read_only=True)
+    author_name = serializers.SerializerMethodField()
+    author_type = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
-        fields = ('comment_id', 'author', 'created_at', 'content')
+        fields = ('comment_id', 'author_id', 'author_type', 'author_name', 'created_at', 'content')
+
+    def create(self, validated_data):
+        # 요청한 사용자로 author 설정
+        validated_data['author'] = self.context['request'].user
+        return super().create(validated_data)
+
+    def get_author_name(self, obj):
+        teacher = Teacher.objects.filter(uid=obj.author.uid).first()
+        if teacher:
+            return teacher.name
+        
+        student = Student.objects.filter(uid=obj.author.uid).first()
+        if student:
+            return student.name
+        
+        return "Unknown"
+
+    def get_author_type(self, obj):
+        if Teacher.objects.filter(uid=obj.author.uid).exists():
+            return "선생님"
+        
+        if Student.objects.filter(uid=obj.author.uid).exists():
+            return "학생"
+        
+        return "Unknown"
 
 # 푼 문제 시리얼라이저
 class SolvedProbSerializer(serializers.ModelSerializer):
