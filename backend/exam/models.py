@@ -22,9 +22,10 @@ class Category(models.Model):
 
 class Exam(models.Model):
     exam_id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
-    creator = models.ForeignKey(Teacher, null=True, on_delete=models.SET_NULL)
+    creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
     exam_name = models.CharField(max_length=255)
+    is_recommended = models.BooleanField(default=False)
 
 class Prob(models.Model):
     prob_id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
@@ -35,7 +36,7 @@ class Prob(models.Model):
     question = models.TextField()
     answer = models.CharField(max_length=512)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    difficulty = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    difficulty = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
 
     class Meta:
         constraints = [

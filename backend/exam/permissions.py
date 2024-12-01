@@ -7,8 +7,6 @@ class ExamPermission(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS: # get요청은 허용
             return True
         if view.__class__.__name__ == "ExamView":
-            if request.method == 'POST': # Exam POST 요청은 선생님만 허용
-                return hasattr(request.user, 'teacher')
             return True
         elif view.__class__.__name__ == "ProbView":
             if request.method == 'POST': # Prob POST 요청은 Exam 생성자만 허용

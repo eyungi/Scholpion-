@@ -1,10 +1,11 @@
 from rest_framework_nested import routers
-from .views import ExamView, ProbView, SolvedExamView, CommentView
+from .views import ExamView, ProbView, SolvedExamView, CommentView, RecommendedExamView
 
 router = routers.DefaultRouter()
 
 # exams/
-router.register(r'exams', ExamView)
+router.register(r'recommended-exams', RecommendedExamView, basename='recommended-exams')
+router.register(r'exams', ExamView, basename='exams')
 # exams/<str:pk>/problems/
 exam_router = routers.NestedDefaultRouter(router, r'exams', lookup='exam')
 exam_router.register(r'problems', ProbView, basename='exam-problems')

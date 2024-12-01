@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .permissions import ExamPermission, SolvedExamPermission
 from django.db.models import Q
+from .services import get_recommended_probs
 
 class ExamView(viewsets.ModelViewSet):
     queryset = Exam.objects.all()
@@ -111,3 +112,43 @@ class CommentView(viewsets.ModelViewSet):
         except SolvedExam.DoesNotExist:
             raise NotFound(detail="시험지를 찾을 수 없습니다.")
         serializer.save(solved_exam=solved_exam, author = self.request.user)
+
+class RecommendedExamView(viewsets.ModelViewSet): 
+    queryset = Exam.objects.filter(is_recommended=True)
+    serializer_class = ExamSerializer
+
+    # put, patch 메서드 제한
+    http_method_names = ['get', 'post', 'delete']
+
+    def create(self, request, *args, **kwargs):
+        category_name = request.data.get('category_name', None)
+
+        if not category_name:
+            return Response({"detail": "카테고리를 입력해주세요."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 추천 문제를 선택하는 서비스 함수 호출
+        probs = get_recommended_probs(request.user, category_name)
+
+        # 선택된 문제가 충분하지 않은 경우 에러 반환
+        if len(probs) < 5:
+            return Response({"detail": "추천 가능한 문제가 부족합니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 추천 시험지 생성
+        recommended_exam = Exam.objects.create(
+            exam_name=f"{category_name} 추천시험지",
+            creator=request.user,
+            is_recommended=True
+        )
+        for index, prob in enumerate(probs, start=1):
+            Prob.objects.create(
+                exam = recommended_exam,
+                prob_seq = index,
+                question=prob.question,
+                answer = prob.answer,
+                category=prob.category,
+                difficulty=prob.difficulty,
+        )
+
+        # 직렬화 및 응답
+        serializer = self.get_serializer(recommended_exam)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
