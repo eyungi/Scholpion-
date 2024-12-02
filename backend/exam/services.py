@@ -31,24 +31,29 @@ def get_recommended_probs(student, category_name):
     ).values_list('prob_id', flat=True)
 
     # 난이도별 문제 필터링
-    low_difficulty_probs = list(Prob.objects.filter(
-        category=category,
-        difficulty=level-1 if level >= 2 else 1
-    ).exclude(prob_id__in=solved_problem_ids))  # 안 푼 문제 필터링
+    def get_filtered_probs(difficulty_level):
+        excluded_ids = solved_problem_ids
+        return Prob.objects.filter(
+            category=category,
+            difficulty=difficulty_level
+        ).exclude(prob_id__in=excluded_ids)
+    
+    # 난이도별 문제 필터링 및 랜덤 선택
+    low_difficulty_probs = get_filtered_probs(level-1 if level >= 2 else 1)    
+    medium_difficulty_probs = get_filtered_probs(level)
+    high_difficulty_probs = get_filtered_probs(level+1 if level <= 4 else 5)
 
-    medium_difficulty_probs = list(Prob.objects.filter(
-        category=category,
-        difficulty=level
-    ).exclude(prob_id__in=solved_problem_ids))  # 안 푼 문제 필터링
+    selected_probs_qs = Prob.objects.none()  # 중복 선택 방지를 위한 쿼리셋
+    # 난이도별로 문제를 선택하고 중복 방지
+    selected_probs = []
+    selected_probs += random.sample(list(low_difficulty_probs), min(2, len(low_difficulty_probs)))
+    selected_probs_qs = selected_probs_qs | Prob.objects.filter(prob_id__in=[prob.prob_id for prob in selected_probs])
 
-    high_difficulty_probs = list(Prob.objects.filter(
-        category=category,
-        difficulty=level+1 if level <= 4 else 5
-    ).exclude(prob_id__in=solved_problem_ids))  # 안 푼 문제 필터링
+    selected_probs += random.sample(list(medium_difficulty_probs), min(2, len(medium_difficulty_probs)))
+    selected_probs_qs = selected_probs_qs | Prob.objects.filter(prob_id__in=[prob.prob_id for prob in selected_probs])
+
+    selected_probs += random.sample(list(high_difficulty_probs), min(1, len(high_difficulty_probs)))
+    selected_probs_qs = selected_probs_qs | Prob.objects.filter(prob_id__in=[prob.prob_id for prob in selected_probs])
 
     # 랜덤으로 문제 선택
-    return (
-        random.sample(low_difficulty_probs, min(2, len(low_difficulty_probs))) +
-        random.sample(medium_difficulty_probs, min(2, len(medium_difficulty_probs))) +
-        random.sample(high_difficulty_probs, min(1, len(high_difficulty_probs)))
-    )
+    return selected_probs_qs

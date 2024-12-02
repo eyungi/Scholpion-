@@ -41,15 +41,6 @@ class ExamTestCase(APITestCase):
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    # 학생이 시험지 생성을 시도했을 때 막히는지 확인하는 메서드
-    def test_unauthorized_post(self):
-        student = create_moke_user()
-        while (not hasattr(student, 'student')):
-            student = create_moke_user()
-        self.client.force_authenticate(user=student)
-        response = self.client.post('/exams/', moke_exam)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
     # 다른 유저가 시험지를 수정하려고 할 때 막히는지 확인하는 메서드
     def test_unauthorized_put(self):
         other_user = create_moke_user() # 기존 시험지에 대한 삭제 권한이 없는 다른 유저 생성

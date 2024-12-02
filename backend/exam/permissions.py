@@ -21,7 +21,7 @@ class ExamPermission(permissions.BasePermission):
             return obj.creator.uid == request.user.uid # 객체 말고 uid로 비교해줘야 정상 동작,,
         if isinstance(obj, Prob):
             # print(obj.exam.teacher == request.user) # test할 땐 false인데 postman으로는 true
-            return obj.exam.creator.uid == request.user.uid
+            return obj.creator.uid == request.user.uid
         
 class SolvedExamPermission(permissions.BasePermission):
     def has_permission(self, request, view):

@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from drf_writable_nested import WritableNestedModelSerializer
-from .models import Category, Option, Prob, Exam, SolvedProb, SolvedExam, Comment
+from .models import Category, Option, Prob, Exam, ExamProb, SolvedProb, SolvedExam, Comment
 from account.models import User, Teacher, Student
+from django.db import transaction
 
 # 카테고리 시리얼라이저
 class CategorySerializer(serializers.ModelSerializer):
@@ -19,14 +20,21 @@ class OptionSerializer(serializers.ModelSerializer):
 class ProbSerializer(WritableNestedModelSerializer):
     options = OptionSerializer(many=True, required=False)
     category = CategorySerializer()
+    prob_seq = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Prob
-        fields = ('prob_id', 'prob_seq', 'question', 'answer', 'options', 'category', 'difficulty')
+        fields = ('prob_id', 'question', 'prob_seq', 'answer', 'options', 'category', 'difficulty', 'creator')
 
     def create(self, validated_data):
         category_data = validated_data.pop('category')
         options_data = validated_data.pop('options', [])
+
+        exam_id = self.context.get('exam_pk')
+        try:
+            exam = Exam.objects.get(exam_id=exam_id)
+        except Exam.DoesNotExist:
+            raise serializers.ValidationError({"detail": "존재하지 않는 시험지입니다."})
 
         # 카테고리 생성
         subject = category_data['subject']
@@ -34,22 +42,51 @@ class ProbSerializer(WritableNestedModelSerializer):
         category, _ = Category.objects.get_or_create(subject=subject, category_name=category_name, creator=self.context['request'].user.teacher) # 존재하는 카테고라면 가져오고 아니라면 생성
         validated_data['category'] = category
 
-        # 문제 생성
-        prob = Prob.objects.create(**validated_data)
+        prob_seq = validated_data.pop('prob_seq')
+        try:
+            with transaction.atomic():
+                # 문제 및 중간 모델 생성
+                prob = Prob.objects.create(**validated_data, creator=self.context['request'].user)
+                ExamProb.objects.create(exam=exam, prob=prob, prob_seq=prob_seq)
 
-        # 옵션 생성
-        for option_data in options_data:
-            Option.objects.create(prob=prob, **option_data)
+                # 옵션 생성
+                for option_data in options_data:
+                    Option.objects.create(prob=prob, **option_data)
 
-        return prob
+            return prob
+        except Exception as e:
+            raise serializers.ValidationError({"detail": str(e)})
 
     def update(self, instance, validated_data):
         category_data = validated_data.pop('category', None)
+        prob_seq = validated_data.pop('prob_seq', None)
+
+        # 카테고리 수정
         if category_data:
             subject = category_data['subject']
             category_name = category_data['category_name']
             category, _ = Category.objects.get_or_create(subject=subject, category_name=category_name, creator=self.context['request'].user.teacher) # 존재하는 카테고라면 가져오고 아니라면 생성
             instance.category = category  # 객체 자체를 수정
+
+        # 문제 번호 수정
+        if prob_seq:
+            exam_id = self.context.get('exam_pk')
+            try:
+                exam = Exam.objects.get(exam_id=exam_id)
+            except Exam.DoesNotExist:
+                raise serializers.ValidationError({"detail": "존재하지 않는 시험지입니다."})
+
+            try:
+                exam_prob = ExamProb.objects.get(exam=exam, prob=instance)
+            except Exam.DoesNotExist:
+                raise serializers.ValidationError({"detail": "존재하지 않는 문제입니다."})
+
+            try:
+                exam_prob.prob_seq = prob_seq
+                exam_prob.save()
+            except Exception as e:
+                raise serializers.ValidationError({"detail": str(e)})
+
         return super().update(instance, validated_data)
 
 # 시험지 시리얼라이저

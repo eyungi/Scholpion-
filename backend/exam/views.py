@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from .models import Exam, Prob, SolvedExam, Comment
+from .models import Exam, Prob, SolvedExam, Comment, ExamProb
 from .serializers import ExamSerializer, ProbSerializer, SolvedExamSerializer, CommentSerializer
 from rest_framework import status
 from rest_framework.exceptions import NotFound
@@ -23,6 +23,12 @@ class ProbView(viewsets.ModelViewSet):
     serializer_class = ProbSerializer
     permission_classes = [IsAuthenticated, ExamPermission]
 
+    # 시리얼라이저로 exam_pk 넘겨줌
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['exam_pk'] = self.kwargs.get('exam_pk')
+        return context
+
     # 해당 exam에 해당하는 문제만 걸러냄
     def get_queryset(self):
         exam_id = self.kwargs['exam_pk']
@@ -32,7 +38,7 @@ class ProbView(viewsets.ModelViewSet):
         except Exam.DoesNotExist:
             raise NotFound(detail="시험지를 찾을 수 없습니다.")
         # 존재하는 시험지라면 내보냄
-        return Prob.objects.filter(exam=exam)
+        return Prob.objects.filter(examprob__exam=exam)
 
     # exam_id를 추가하여 생성
     def perform_create(self, serializer):
@@ -41,7 +47,8 @@ class ProbView(viewsets.ModelViewSet):
             exam = Exam.objects.get(exam_id=exam_id)
         except Exam.DoesNotExist:
             raise NotFound(detail="시험지를 찾을 수 없습니다.")
-        serializer.save(exam=exam)
+        prob = serializer.save()
+        prob.exams.add(exam)
 
 class SolvedExamView(viewsets.ModelViewSet):
     queryset = SolvedExam.objects.all()
@@ -140,14 +147,11 @@ class RecommendedExamView(viewsets.ModelViewSet):
             is_recommended=True
         )
         for index, prob in enumerate(probs, start=1):
-            Prob.objects.create(
-                exam = recommended_exam,
-                prob_seq = index,
-                question=prob.question,
-                answer = prob.answer,
-                category=prob.category,
-                difficulty=prob.difficulty,
-        )
+            ExamProb.objects.create(
+                exam=recommended_exam,
+                prob=prob,
+                prob_seq=index
+            )
 
         # 직렬화 및 응답
         serializer = self.get_serializer(recommended_exam)

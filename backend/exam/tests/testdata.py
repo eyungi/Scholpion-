@@ -19,7 +19,8 @@ moke_prob = {
     "category": {
         "subject": "영어",
         "category_name": "동명사"
-    }
+    },
+    "difficulty": 1
 }
 
 moke_prob2 = {

@@ -25,22 +25,26 @@ class Exam(models.Model):
     creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
     exam_name = models.CharField(max_length=255)
+    problems = models.ManyToManyField('Prob', through='ExamProb', related_name='exams')
     is_recommended = models.BooleanField(default=False)
 
 class Prob(models.Model):
     prob_id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
-
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
-    prob_seq = models.IntegerField()
+    creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
     question = models.TextField()
     answer = models.CharField(max_length=512)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     difficulty = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
 
+class ExamProb(models.Model):  # Exam과 Prob의 중간 모델
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+    prob = models.ForeignKey(Prob, on_delete=models.CASCADE)
+    prob_seq = models.IntegerField()  # 문제 순서 필드
+
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['exam', 'prob_seq'], name='unique_prob')
+            models.UniqueConstraint(fields=['exam', 'prob_seq'], name='unique_seq')
         ]
 
 class Option(models.Model):
