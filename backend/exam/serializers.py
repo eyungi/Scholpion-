@@ -39,7 +39,10 @@ class ProbSerializer(WritableNestedModelSerializer):
         # 카테고리 생성
         subject = category_data['subject']
         category_name = category_data['category_name']
-        category, _ = Category.objects.get_or_create(subject=subject, category_name=category_name, creator=self.context['request'].user.teacher) # 존재하는 카테고라면 가져오고 아니라면 생성
+        category = Category.objects.filter(subject=subject, category_name=category_name).first()
+        
+        if not category:
+            category = Category.objects.create(subject=subject, category_name=category_name, creator=self.context['request'].user) # 존재하는 카테고라면 가져오고 아니라면 생성
         validated_data['category'] = category
 
         prob_seq = validated_data.pop('prob_seq')
@@ -65,7 +68,9 @@ class ProbSerializer(WritableNestedModelSerializer):
         if category_data:
             subject = category_data['subject']
             category_name = category_data['category_name']
-            category, _ = Category.objects.get_or_create(subject=subject, category_name=category_name, creator=self.context['request'].user.teacher) # 존재하는 카테고라면 가져오고 아니라면 생성
+            category = Category.objects.filter(subject=subject, category_name=category_name).first()
+            if not category:
+                category, _ = Category.objects.create(subject=subject, category_name=category_name, creator=self.context['request'].user) # 존재하는 카테고라면 가져오고 아니라면 생성
             instance.category = category  # 객체 자체를 수정
 
         # 문제 번호 수정
