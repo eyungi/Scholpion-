@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import scholpionImage from "../assets/scholpion.png";
 import { useState } from "react";
-import axios from "axios";
+import axios from "../axiosInstance.jsx";
 import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
@@ -32,7 +32,7 @@ const SignUp = () => {
     try {
       console.log("보내는 데이터:", { ...formData, role });
       const response = await axios.post(
-        "http://127.0.0.1:8000/users/register/",
+        "/users/register/",
         {
           ...formData,
           role,

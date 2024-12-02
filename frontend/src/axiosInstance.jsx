@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 // Create Axios instance
 const axiosInstance = axios.create({
-  baseURL: "http://127.0.0.1:8000", // Replace with your API base URL
+  baseURL: import.meta.env.VITE_BASE_URL, // Replace with your API base URL
   withCredentials: true, // Send cookies with requests
 });
 
@@ -16,7 +16,7 @@ const refreshAccessToken = async () => {
     }
 
     const response = await axios.post(
-      "http://127.0.0.1:8000/users/token/refresh/", // Replace with your refresh token endpoint
+      "/users/token/refresh/", // Replace with your refresh token endpoint
       { refresh: refreshToken }
     );
 
