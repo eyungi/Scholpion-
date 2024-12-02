@@ -113,11 +113,11 @@ class ProbSerializer(WritableNestedModelSerializer):
 
 # 시험지 시리얼라이저
 class ExamSerializer(serializers.ModelSerializer):
-    problems = ProbSerializer(many=True, required=False)
+    # problems = ProbSerializer(many=True, required=False)
 
     class Meta:
         model = Exam
-        fields = ('exam_id', 'exam_name', 'problems', 'creator')
+        fields = ('exam_id', 'exam_name', 'creator')
 
 # 댓글(질의응답) 시리얼라이저
 class CommentSerializer(serializers.ModelSerializer):
