@@ -22,7 +22,6 @@ class ProbTestCase(APITestCase):
         # Prob 생성
         exam_id = response.data['exam_id']
         response = self.client.post(f'/exams/{exam_id}/problems/', self.moke_prob, format='json') # format 안정해주면 default: form-data
-
         self.prob_id = response.data['prob_id']
         self.url_probs = f'/exams/{exam_id}/problems/'
         self.url_prob = self.url_probs + self.prob_id + '/'

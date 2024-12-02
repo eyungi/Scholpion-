@@ -21,27 +21,22 @@ class OptionSerializer(serializers.ModelSerializer):
 class ProbSerializer(WritableNestedModelSerializer):
     options = OptionSerializer(many=True, required=False)
     category = CategorySerializer()
-    prob_seq = serializers.SerializerMethodField() # 직렬화 prob_seq
+    prob_seq = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Prob
         fields = ('prob_id', 'question', 'prob_seq', 'answer', 'options', 'category', 'difficulty', 'creator')
-        extra_kwargs = {
-            'prob_seq': {'write_only': True}  # 역직렬화 prob_seq
-        }
 
     def get_queryset(self):
         exam_id = self.kwargs.get('exam_pk')
         return Prob.objects.filter(exams__exam_id=exam_id).order_by('examprob__prob_seq')
 
-    def get_prob_seq(self, obj):
-        exam_id = self.context.get('exam_pk')
-        print(exam_id)
-        try:
-            exam_prob = ExamProb.objects.get(exam__exam_id=exam_id, prob=obj)
-            return exam_prob.prob_seq
-        except ExamProb.DoesNotExist:
-            raise APIException({"detail": "시험과 관련된 문제 정보가 존재하지 않습니다."})
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # 출력 시 원하는 값을 추가
+        exam_prob = ExamProb.objects.get(exam__exam_id=self.context.get('exam_pk'), prob=instance)
+        representation['prob_seq'] = exam_prob.prob_seq
+        return representation
 
     def create(self, validated_data):
         category_data = validated_data.pop('category')
@@ -66,7 +61,7 @@ class ProbSerializer(WritableNestedModelSerializer):
         try:
             with transaction.atomic():
                 # 문제 및 중간 모델 생성
-                prob = Prob.objects.create(**validated_data, creator=self.context['request'].user)
+                prob = Prob.objects.create(**validated_data, creator=self.context['request'].user.teacher)
                 ExamProb.objects.create(exam=exam, prob=prob, prob_seq=prob_seq)
 
                 # 옵션 생성
