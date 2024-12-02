@@ -30,7 +30,7 @@ class Exam(models.Model):
 
 class Prob(models.Model):
     prob_id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
-    creator = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    creator = models.ForeignKey(Teacher, null=True, on_delete=models.SET_NULL)
 
     question = models.TextField()
     answer = models.CharField(max_length=512)
