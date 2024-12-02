@@ -1,7 +1,7 @@
-name: Deployment
+name: Scholpion Front Deployment
 on:
   push:
-    branches: ["master"]
+    branches: ["dev"]
 
 jobs:
   deploy:
