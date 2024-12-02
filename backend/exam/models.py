@@ -83,7 +83,7 @@ class SolvedProb(models.Model):
     solved_exam = models.ForeignKey(SolvedExam, on_delete=models.CASCADE, related_name='problems')
     prob = models.ForeignKey(Prob, on_delete=models.CASCADE)
 
-    solution = models.ImageField(upload_to='solution')
+    solution = models.TextField()
     response = models.CharField(max_length=512, null=True, blank=True)
     correctness = models.BooleanField(null=True)
 
