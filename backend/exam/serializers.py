@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import APIException
 from drf_writable_nested import WritableNestedModelSerializer
 from .models import Category, Option, Prob, Exam, ExamProb, SolvedProb, SolvedExam, Comment
 from account.models import User, Teacher, Student
@@ -20,11 +21,27 @@ class OptionSerializer(serializers.ModelSerializer):
 class ProbSerializer(WritableNestedModelSerializer):
     options = OptionSerializer(many=True, required=False)
     category = CategorySerializer()
-    prob_seq = serializers.IntegerField(write_only=True)
+    prob_seq = serializers.SerializerMethodField() # 직렬화 prob_seq
 
     class Meta:
         model = Prob
         fields = ('prob_id', 'question', 'prob_seq', 'answer', 'options', 'category', 'difficulty', 'creator')
+        extra_kwargs = {
+            'prob_seq': {'write_only': True}  # 역직렬화 prob_seq
+        }
+
+    def get_queryset(self):
+        exam_id = self.kwargs.get('exam_pk')
+        return Prob.objects.filter(exams__exam_id=exam_id).order_by('examprob__prob_seq')
+
+    def get_prob_seq(self, obj):
+        exam_id = self.context.get('exam_pk')
+        print(exam_id)
+        try:
+            exam_prob = ExamProb.objects.get(exam__exam_id=exam_id, prob=obj)
+            return exam_prob.prob_seq
+        except ExamProb.DoesNotExist:
+            raise APIException({"detail": "시험과 관련된 문제 정보가 존재하지 않습니다."})
 
     def create(self, validated_data):
         category_data = validated_data.pop('category')
