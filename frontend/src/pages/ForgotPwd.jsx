@@ -3,6 +3,18 @@ import { Grid2, Box, Button, ButtonGroup } from "@mui/material";
 import eraser from "../assets/eraser.png";
 import pencil from "../assets/pencil.png";
 import reset from "../assets/reset.png";
+import { MathJaxContext, MathJax } from "better-react-mathjax";
+import ContentRenderer from "../ContentRender";
+
+const mathJaxConfig = {
+  loader: { load: ["input/tex", "output/chtml"] },
+  tex: {
+    inlineMath: [
+      ["\\(", "\\)"],
+      ["$", "$"],
+    ],
+  },
+};
 
 const ForgotPwd = () => {
   const canvasRef = useRef(null);
@@ -77,89 +89,107 @@ const ForgotPwd = () => {
     setIsEraserActive((prev) => !prev); // 지우개 활성화/비활성화 토글
   };
 
+  const backendContent = `
+    <h2>Welcome</h2>
+    <p>Here is an image:</p>
+    <img src="${eraser}" alt="Placeholder Image" style="width: 30px; height: 30px;" />
+    <p>Here is a math formula:</p>
+    <mathjax>a^2 + b^2 = c^2</mathjax>
+    <p>Another formula:</p>
+    <mathjax>E = mc^2</mathjax>
+  `;
+
   return (
-    <Grid2 container spacing={2}>
-      <Grid2
-        size={3.6}
-        sx={{
-          borderRight: "2px solid rgba(0,0,0,0.1)",
-          position: "relative",
-          height: "100vh",
-        }}
-      ></Grid2>
-      <Grid2
-        size={8.4}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "100vh",
-        }}
-      >
-        <Box
+    <MathJaxContext config={mathJaxConfig}>
+      <Grid2 container spacing={2}>
+        <Grid2
+          size={3.6}
           sx={{
-            width: "100%",
-            height: "100%",
+            borderRight: "2px solid rgba(0,0,0,0.1)",
             position: "relative",
-            textAlign: "center",
-            fontSize: "20px",
+            height: "100vh",
           }}
         >
-          <ButtonGroup>
-            <Button
-              variant="contained"
-              color="white"
-              onClick={toggleEraser}
-              sx={{
-                minWidth: "30px", // 버튼 크기 설정
-                height: "30px",
-              }}
-            >
-              <img
-                src={isEraserActive ? pencil : eraser}
-                style={{
-                  width: "20px", // 이미지 크기 조정
-                  height: "20px",
-                }}
-              />
-            </Button>
-            <Button
-              variant="contained"
-              color="white"
-              sx={{
-                padding: "10px", // 버튼 내부 여백 조정
-                minWidth: "30px", // 버튼 크기 설정
-                height: "30px",
-              }}
-              onClick={resetCanvas}
-            >
-              <img
-                src={reset}
-                style={{
-                  width: "20px", // 이미지 크기 조정
-                  height: "20px",
-                }}
-              />
-            </Button>
-            <Button variant="contained" color="secondary" onClick={saveCanvas}>
-              Save
-            </Button>
-          </ButtonGroup>
-          <canvas
-            ref={canvasRef}
-            style={{
+          <ContentRenderer content={backendContent} />
+        </Grid2>
+        <Grid2
+          size={8.4}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100vh",
+          }}
+        >
+          <Box
+            sx={{
               width: "100%",
               height: "100%",
-              border: "1px solid rgba(0,0,0,0.1)",
+              position: "relative",
+              textAlign: "center",
+              fontSize: "20px",
             }}
-            onMouseDown={startDrawing}
-            onMouseMove={draw}
-            onMouseUp={stopDrawing}
-            onMouseLeave={stopDrawing}
-          />
-        </Box>
+          >
+            <ButtonGroup>
+              <Button
+                variant="contained"
+                color="white"
+                onClick={toggleEraser}
+                sx={{
+                  minWidth: "30px", // 버튼 크기 설정
+                  height: "30px",
+                }}
+              >
+                <img
+                  src={isEraserActive ? pencil : eraser}
+                  style={{
+                    width: "20px", // 이미지 크기 조정
+                    height: "20px",
+                  }}
+                />
+              </Button>
+              <Button
+                variant="contained"
+                color="white"
+                sx={{
+                  padding: "10px", // 버튼 내부 여백 조정
+                  minWidth: "30px", // 버튼 크기 설정
+                  height: "30px",
+                }}
+                onClick={resetCanvas}
+              >
+                <img
+                  src={reset}
+                  style={{
+                    width: "20px", // 이미지 크기 조정
+                    height: "20px",
+                  }}
+                />
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={saveCanvas}
+              >
+                Save
+              </Button>
+            </ButtonGroup>
+            <canvas
+              ref={canvasRef}
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "1px solid rgba(0,0,0,0.1)",
+              }}
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={stopDrawing}
+              onMouseLeave={stopDrawing}
+            />
+          </Box>
+        </Grid2>
       </Grid2>
-    </Grid2>
+    </MathJaxContext>
   );
 };
 

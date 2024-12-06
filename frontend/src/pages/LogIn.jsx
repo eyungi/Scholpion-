@@ -5,6 +5,7 @@ import {
   Link,
   Typography,
   Container,
+  Box,
 } from "@mui/material";
 import { useState } from "react";
 import scholpionImage from "../assets/scholpion.png";
@@ -123,14 +124,17 @@ function LogIn() {
           >
             로그인
           </Button>
-          <Grid2 container spacing={2}>
+          {/* <Grid2 container spacing={2}>
             <Grid2 size="grow">
               <Link href="../forgotpwd">비밀번호 찾기</Link>
             </Grid2>
             <Grid2>
               <Link href="../signup">회원가입</Link>
             </Grid2>
-          </Grid2>
+          </Grid2> */}
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Link href="../signup">회원가입</Link>
+          </Box>
         </Container>
       </Grid2>
     </Grid2>
