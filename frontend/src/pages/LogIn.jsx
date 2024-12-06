@@ -10,7 +10,7 @@ import {
 import { useState } from "react";
 import scholpionImage from "../assets/scholpion.png";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../axiosInstance.jsx";
 import Cookies from "js-cookie";
 
 function LogIn() {
@@ -29,7 +29,7 @@ function LogIn() {
   const handleLogin = async () => {
     try {
       console.log("보내는 데이터:", { email, password });
-      const response = await axios.post("http://127.0.0.1:8000/users/token/", {
+      const response = await axios.post("/users/token/", {
         email,
         password,
       });
@@ -126,10 +126,10 @@ function LogIn() {
           </Button>
           {/* <Grid2 container spacing={2}>
             <Grid2 size="grow">
-              <Link href="../forgotpwd">비밀번호 찾기</Link>
+              <Link href="/forgotpwd">비밀번호 찾기</Link>
             </Grid2>
             <Grid2>
-              <Link href="../signup">회원가입</Link>
+              <Link href="/signup">회원가입</Link>
             </Grid2>
           </Grid2> */}
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
