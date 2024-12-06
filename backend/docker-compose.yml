@@ -4,6 +4,7 @@ version: '3'
 services:
   # Nginx
   nginx:
+    platform: linux/amd64
     image: wingit_backend_nginx:v0.0.1
     build:
       context: ./nginx/
@@ -16,6 +17,7 @@ services:
 
   # Django Application
   web:
+    platform: linux/amd64
     image: wingit_backend_app:v0.0.1
     build:
       context: .
