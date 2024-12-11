@@ -5,17 +5,20 @@ from .models import Category, Option, Prob, Exam, ExamProb, SolvedProb, SolvedEx
 from account.models import User, Teacher, Student
 from django.db import transaction
 
+
 # 카테고리 시리얼라이저
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
 
+
 # 선지 시리얼라이저
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
         fields = ('option_id', 'option_seq', 'option_text')
+
 
 # 문제 시리얼라이저
 class ProbSerializer(WritableNestedModelSerializer):
@@ -114,6 +117,7 @@ class ExamSerializer(serializers.ModelSerializer):
         model = Exam
         fields = ('exam_id', 'exam_name', 'creator')
 
+
 # 댓글(질의응답) 시리얼라이저
 class CommentSerializer(serializers.ModelSerializer):
     # list 요청시 내보내는 필드 (모델에 관여하지 않음)
@@ -157,15 +161,18 @@ class SolvedProbSerializer(serializers.ModelSerializer):
         model = SolvedProb
         fields = ('solved_prob_id', 'prob', 'solution', 'response', 'correctness')
 
+
 # 푼 시험지 시리얼라이저
 class SolvedExamSerializer(serializers.ModelSerializer):
     problems = SolvedProbSerializer(many=True)
     comments = CommentSerializer(many=True, read_only=True)
     score = serializers.IntegerField(required=False) # 직접 계산할 필드
+    exam_obj = ExamSerializer(source='exam', read_only=True)
+    exam = serializers.PrimaryKeyRelatedField(queryset=Exam.objects.all(), write_only=True)
 
     class Meta:
         model  = SolvedExam
-        fields = '__all__'
+        fields = ('solved_exam_id', 'exam', 'exam_obj', 'student', 'teacher', 'feedback', 'time', 'score','solved_at', 'problems', 'comments', 'comments',)
         read_only_fields = ['student']  # student는 서버에서 추가
 
     def __init__(self, *args, **kwargs):
@@ -182,7 +189,7 @@ class SolvedExamSerializer(serializers.ModelSerializer):
         solved_exam = SolvedExam.objects.create(**validated_data)
         # solved_problem 생성
         for problem_data in problems_data:
-            # correctness 필드 값 계산
+            # correctness 필드 값 계산
             prob_id = problem_data['prob'].prob_id
             response = problem_data['response']
             prob = Prob.objects.get(prob_id=prob_id)
@@ -196,7 +203,7 @@ class SolvedExamSerializer(serializers.ModelSerializer):
         solved_exam.save()
         return solved_exam
     
-    # score 필드 값 계산을 위한 함수
+    # score 필드 값 계산을 위한 함수
     def calculate_score(self, problems_data):
         score = 0
         for problem in problems_data:
