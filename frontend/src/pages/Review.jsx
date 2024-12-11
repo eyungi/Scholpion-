@@ -130,6 +130,12 @@ const Review = () => {
             <Typography>{`점수 : ${reviewData.score}`}</Typography>
             <Typography>{`피드백 : ${reviewData.feedback !== null ? "완료" : "미완"}`}</Typography>
           </Box>
+          <Box sx={{mt: 1}}>
+            <hr/>
+            <Typography variant="h6">피드백</Typography>
+            <Typography>{reviewData.feedback}</Typography>
+            <hr/>
+          </Box>
           <TableContainer>
             <Table sx={{ minWidth: 650, mt: "15px" }} size="small">
               <TableHead>

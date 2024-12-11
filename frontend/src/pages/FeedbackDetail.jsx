@@ -17,12 +17,12 @@ import {
   Stack,
   Avatar, TextField,
 } from "@mui/material";
-import tableData from "../MockTableData";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axiosInstance from "../axiosInstance";
 import ContentRenderer from "../ContentRender.jsx";
-import {fetchFeedbackDetail} from "../apis/feedback.js";
+import {fetchFeedbackDetail, updateFeedback} from "../apis/feedback.js";
+import * as React from "react";
 
 const Review = () => {
   const params = useParams();
@@ -30,9 +30,11 @@ const Review = () => {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const [dialogSeq, setDialogSeq] = useState(1);
-  const [error, setError] = useState(false);
   const [problem, setProblem] = useState({});
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogText, setDialogText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -94,6 +96,20 @@ const Review = () => {
       fetchProblemData();
     }
   }, [dialogSeq, open]);
+
+  const handleUpdateFeedback = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    console.log(formData.get("feedback"));
+    try {
+      await updateFeedback(params.id, formData.get("feedback"));
+      setDialogText("성공적으로 반영됐습니다.");
+    } catch (error) {
+      setDialogText("요청 실패, 다시 시도해주세요.");
+    }
+    setDialogOpen(true);
+    return false;
+  }
 
   return (
     <div>
@@ -181,8 +197,10 @@ const Review = () => {
           </TableContainer>
           <Box sx={{ mt: 4}}>
             <Typography>피드백 남기기</Typography>
-            <TextField multiline rows={10} sx={{ width: "100%", mt: 1 }}></TextField>
-            <Button variant="contained" sx={{ mt: 1 }}>저장</Button>
+            <form onSubmit={handleUpdateFeedback}>
+              <TextField defaultValue={reviewData.feedback} name="feedback" multiline rows={10} sx={{ width: "100%", mt: 1 }}></TextField>
+              <Button type="submit" variant="contained" sx={{ mt: 1 }}>저장</Button>
+            </form>
           </Box>
         </Box>
         <Box
@@ -205,17 +223,15 @@ const Review = () => {
             결과 리스트로 돌아가기
           </Button>
         </Box>
-        <Dialog open={open} onClose={() => setOpen(false)}>
+        <Dialog fullWidth maxWidth="md" open={open} onClose={() => setOpen(false)}>
           <DialogTitle>{dialogSeq}번문제</DialogTitle>
           <DialogContent
             sx={{
               display: "flex",
               flexDirection: "row",
-              minWidth: "550px",
-              minHeight: "300px",
             }}
           >
-            <Container sx={{paddingLeft: "0!important", flex: 2}}>
+            <Container sx={{paddingLeft: "0!important", flex: "2!important"}}>
               <Box
                 sx={{
                   boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
@@ -259,16 +275,35 @@ const Review = () => {
                   <Typography>주관식입니다</Typography>
                 </Box>
               )}
-              <Box>
+              <Box mt={1}>
+                <Typography>연습장</Typography>
                 <img width="100%" src={reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].solution}/>
               </Box>
             </Container>
-            <Container flex={1}>
+            <Container sx={{ flex: "1!important"}}>
               <Typography>액션 로그</Typography>
             </Container>
           </DialogContent>
         </Dialog>
       </Container>
+      <Dialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          정보
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {dialogText}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

@@ -109,7 +109,8 @@ const Home = () => {
                         height: "20px",
                         marginRight: "5px",
                       }}
-                    ></img>
+                      alt={"Profile"}
+                    />
                     프로필
                   </Box>
                   <Box
