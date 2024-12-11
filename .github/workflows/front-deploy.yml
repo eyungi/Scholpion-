@@ -17,7 +17,7 @@ jobs:
       - name: Setup Environment
         uses: actions/setup-node@master
         with:
-          node-version: v18.13.0
+          node-version: v18.20.3
       - name: Setup Project
         run: yarn
         working-directory: ${{ env.working-directory }}
