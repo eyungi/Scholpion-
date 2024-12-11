@@ -58,7 +58,7 @@ class StudentSerializer(UserSerializer):
 
     class Meta(UserSerializer.Meta):
         model = Student
-        fields = UserSerializer.Meta.fields + ('school', 'grade')
+        fields = UserSerializer.Meta.fields + ('school', 'grade', 'role',)
 
     def create(self, validated_data):
         student = Student.objects.create(
