@@ -7,6 +7,7 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_REGION: "ap-northest-2"
+  working-directory: ./frontend
 
 jobs:
   deploy:
@@ -19,9 +20,12 @@ jobs:
           node-version: v18.13.0
       - name: Setup Project
         run: yarn
+        working-directory: ${{ env.working-directory }}
       - name: Build Project
         run: yarn build
+        working-directory: ${{ env.working-directory }}
       - name: Upload to S3
         run: aws s3 sync dist s3://${{ secrets.S3_BUCKET_NAME }} --delete
+        working-directory: ${{ env.working-directory }}
       - name: Invalidate Cloudfront
         run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --path "/*"
