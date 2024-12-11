@@ -1,3 +1,7 @@
+import * as React from "react";
+import { useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import axios from "../axiosInstance.jsx";
 import {
   TextField,
   Button,
@@ -5,35 +9,23 @@ import {
   Link,
   Typography,
   Container,
-  Box,
+  Box, Modal, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
 } from "@mui/material";
-import { useState } from "react";
 import scholpionImage from "../assets/scholpion.png";
-import { useNavigate } from "react-router-dom";
-import axios from "../axiosInstance.jsx";
-import Cookies from "js-cookie";
 
 function LogIn() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const nav = useNavigate();
+  const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
 
-  const onChangeEmail = (e) => {
-    setEmail(e.target.value);
-  };
-
-  const onChangePwd = (e) => {
-    setPassword(e.target.value);
-  };
-
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
     try {
-      console.log("보내는 데이터:", { email, password });
+      const data = new FormData(e.target);
+      console.log();
       const response = await axios.post("/users/token/", {
-        email,
-        password,
+        email: data.get("email"),
+        password: data.get("password"),
       });
-      console.log(response.data);
       const { access, refresh } = response.data;
       Cookies.set("access_token", access, {
         expires: 1,
@@ -47,10 +39,11 @@ function LogIn() {
         sameSite: "Strict",
         path: "/",
       });
-      nav("/");
+      navigate("/");
     } catch (error) {
-      console.error("로그인 중 오류 발생:", error);
+      setOpen(true);
     }
+    return false;
   };
 
   document.body.style.overflow = "hidden";
@@ -95,48 +88,55 @@ function LogIn() {
           >
             시작하기 위해 로그인을 해주세요
           </Typography>
-          <TextField
-            label="Email Address"
-            required
-            fullWidth
-            name="email"
-            value={email}
-            onChange={onChangeEmail}
-            autoFocus
-            sx={{ mb: 2 }}
-          />
-          <br />
-          <TextField
-            label="Password"
-            type="password"
-            value={password}
-            onChange={onChangePwd}
-            required
-            fullWidth
-            name="password"
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            onClick={handleLogin}
-            sx={{ mt: 3, mb: 2 }}
-          >
-            로그인
-          </Button>
-          {/* <Grid2 container spacing={2}>
-            <Grid2 size="grow">
-              <Link href="/forgotpwd">비밀번호 찾기</Link>
-            </Grid2>
-            <Grid2>
+          <form autoComplete="off" onSubmit={handleLogin}>
+            <TextField
+                label="Email Address"
+                required
+                fullWidth
+                name="email"
+                autoFocus
+                sx={{ mb: 2 }}
+            />
+            <br />
+            <TextField
+                label="Password"
+                type="password"
+                required
+                fullWidth
+                name="password"
+            />
+            <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+            >
+              로그인
+            </Button>
+            <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
               <Link href="/signup">회원가입</Link>
-            </Grid2>
-          </Grid2> */}
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <Link href="../signup">회원가입</Link>
-          </Box>
+            </Box>
+          </form>
         </Container>
       </Grid2>
+      <Dialog
+          open={open}
+          onClose={() => setOpen(false)}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          로그인 실패
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            해당 정보로는 로그인할 수 없습니다.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Disagree</Button>
+        </DialogActions>
+      </Dialog>
     </Grid2>
   );
 }
