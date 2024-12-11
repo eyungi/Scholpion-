@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from "react-router-dom";
-import testArray from "./../MockTestData";
 import { useState, useEffect, useRef } from "react";
 import {
   Grid2,
@@ -12,29 +11,15 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   TextField,
   ButtonGroup,
 } from "@mui/material";
-import axios from "axios";
-import Cookies from "js-cookie";
-import { MathJaxContext, MathJax } from "better-react-mathjax";
 import ContentRenderer from "../ContentRender";
 
 import eraser from "../assets/eraser.png";
 import pencil from "../assets/pencil.png";
 import reset from "../assets/reset.png";
 import axiosInstance from "../axiosInstance";
-
-const mathJaxConfig = {
-  loader: { load: ["input/tex", "output/chtml"] },
-  tex: {
-    inlineMath: [
-      ["\\(", "\\)"],
-      ["$", "$"],
-    ],
-  },
-};
 
 const Test = () => {
   //문제관련
@@ -209,21 +194,6 @@ const Test = () => {
         const solutionImg = canvas.toDataURL("image/png");
         updatedProblems[index].solution = solutionImg;
 
-        // var byteString = window.atob(s.split(',')[1]);
-        // var array = [];
-        // for (var i = 0; i < byteString.length; i++) {
-        //   array.push(byteString.charCodeAt(i));
-        // }
-        // var myBlob = new Blob([new ArrayBuffer(array)], {type: 'image/png'});
-        // var file = new File([myBlob], "blobtofile.png");
-        // updatedProblems[index].solution = file;
-
-        //다운로드로 저장되는지 확인
-        const downloadLink = document.createElement("a");
-        downloadLink.href = solutionImg;
-        downloadLink.download = `cavas${index}_image.png`;
-        downloadLink.click();
-
         //초기화
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -301,14 +271,6 @@ const Test = () => {
     setIsEraserActive((prev) => !prev);
   };
 
-  //   const backendContent = `
-  //   <img src="${eraser}" alt="Placeholder Image" style="width: 30px; height: 30px;" />
-  //   <br/>
-  //   <mathjax>a^2 + b^2 = c^2</mathjax>
-  //   <p>Another formula:</p>
-  //   <mathjax>E = mc^2</mathjax>
-  // `;
-
   return (
     <Grid2 container spacing={2}>
       <Grid2
@@ -330,9 +292,7 @@ const Test = () => {
             }}
           >
             {/* <Typography>{problem.question}</Typography> */}
-            <MathJaxContext config={mathJaxConfig}>
-              <ContentRenderer content={problem.question} />
-            </MathJaxContext>
+            <ContentRenderer content={problem.question} />
           </Box>
           {problem.options.length > 0 ? (
             <Stack spacing={2.5} sx={{ mt: "20px" }}>
@@ -343,15 +303,20 @@ const Test = () => {
                     display: "flex",
                     fontSize: "20px",
                     alignItems: "center",
-                    color: "black",
+                    color: answer === item.option_seq ? "white" : "black",
                     "&:focus": {
                       boxShadow: "0 0 0 0.2rem rgba(0,123,255,.5)",
                     },
+                    backgroundColor: answer === item.option_seq ? "black" : "inherit",
                   }}
                   key={item.option_seq}
                   onClick={() => {
                     const updatedAnswer = item.option_seq;
-                    setAnswer(updatedAnswer); // 답변 업데이트
+                    if (answer === updatedAnswer) {
+                      setAnswer(""); // 답변 업데이트
+                    } else {
+                      setAnswer(updatedAnswer); // 답변 업데이트
+                    }
                     onChangeAnswer(updatedAnswer); // `answerSheet` 업데이트
                   }}
                 >
