@@ -15,13 +15,14 @@ import {
   DialogContent,
   DialogContentText,
   Stack,
-  Avatar,
+  Avatar, TextField,
 } from "@mui/material";
 import tableData from "../MockTableData";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axiosInstance from "../axiosInstance";
 import ContentRenderer from "../ContentRender.jsx";
+import {fetchFeedbackDetail} from "../apis/feedback.js";
 
 const Review = () => {
   const params = useParams();
@@ -34,16 +35,14 @@ const Review = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const getReviewData = async () => {
+    (async () => {
       try {
-        const response = await axiosInstance.get(`/solved-exams/${params.id}/`);
-        console.log(response.data);
-        setReviewData(response.data);
+        const dataset = await fetchFeedbackDetail(params.id);
+        setReviewData(dataset);
       } catch (error) {
         setError(err.message || "데이터를 가져오지 못했습니다");
       }
-    };
-    getReviewData();
+    })();
   }, []);
 
   const formatDateTime = (dateTimeString) => {
@@ -135,9 +134,11 @@ const Review = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>#</TableCell>
-                  <TableCell align="right">내 응답</TableCell>
+                  <TableCell align="right">학생 응답</TableCell>
                   <TableCell align="right">정답</TableCell>
                   <TableCell align="right">정답 여부</TableCell>
+                  <TableCell align="right">걸린 시간</TableCell>
+                  <TableCell align="right">액션 수</TableCell>
                   <TableCell align="right"></TableCell>
                 </TableRow>
               </TableHead>
@@ -157,6 +158,8 @@ const Review = () => {
                         <TableCell align="right">
                           {prob.correctness ? "예" : "아니오"}
                         </TableCell>
+                        <TableCell></TableCell>
+                        <TableCell></TableCell>
                         <TableCell
                           align="center"
                           sx={{
@@ -176,22 +179,10 @@ const Review = () => {
               </TableBody>
             </Table>
           </TableContainer>
-          <Box sx={{ mt: "30px" }}>
-            <Stack spacing={1} sx={{ mt: "10px" }}>
-              {reviewData.comments && Array.isArray(reviewData.comments) ? (
-                reviewData.comments.map((item) => (
-                  <Box key={item.comment_id}>
-                    <h3>코멘트</h3>
-                    <Typography sx={{ mb: "5px" }}>현우진 선생님</Typography>
-                    <Typography sx={{ whiteSpace: "pre-line" }}>
-                      {item.content}
-                    </Typography>
-                  </Box>
-                ))
-              ) : (
-                <Typography>코멘트가 없습니다.</Typography>
-              )}
-            </Stack>
+          <Box sx={{ mt: 4}}>
+            <Typography>피드백 남기기</Typography>
+            <TextField multiline rows={10} sx={{ width: "100%", mt: 1 }}></TextField>
+            <Button variant="contained" sx={{ mt: 1 }}>저장</Button>
           </Box>
         </Box>
         <Box
@@ -209,7 +200,7 @@ const Review = () => {
               backgroundColor: "#f1f3f4",
               color: "gray",
             }}
-            onClick={() => nav("/resultlist")}
+            onClick={() => nav("/feedbacks")}
           >
             결과 리스트로 돌아가기
           </Button>
@@ -219,7 +210,7 @@ const Review = () => {
           <DialogContent
             sx={{
               display: "flex",
-              flexDirection: "column",
+              flexDirection: "row",
               minWidth: "550px",
               minHeight: "300px",
             }}
@@ -268,47 +259,12 @@ const Review = () => {
                   <Typography>주관식입니다</Typography>
                 </Box>
               )}
+              <Box>
+                <img width="100%" src={reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].solution}/>
+              </Box>
             </Container>
-            <Container sx={{ marginTop: "8px", padding: "0!important", flex: 1 }}>
-              <Stack sx={{ mt: "10px", display: "flex", flexDirection: "row" }}>
-                <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px", whiteSpace: "nowrap"}}>내 응답</Typography>
-                  <Typography>
-                    {reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].response
-                        ? reviewData.problems[dialogSeq - 1].response
-                        : "응답 없음"}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px", whiteSpace: "nowrap"}}>정답</Typography>
-                  <Typography>
-                    {reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].answer
-                        ? reviewData.problems[dialogSeq - 1].answer
-                        : "응답 없음"}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>정답 여부(정답률)</Typography>
-                  <Typography>
-                    {reviewData.problems && reviewData.problems[dialogSeq - 1]
-                        ? reviewData.problems[dialogSeq - 1].correctness
-                            ? "예 (53%)"
-                            : "아니오 (53%)"
-                        : "데이터 없음"}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>소요 시간 (평균)</Typography>
-                  <Typography>3분 (1분)</Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>액션 (평균)</Typography>
-                  <Typography>10번 (3번)</Typography>
-                </Box>
-              </Stack>
-            </Container>
-            <Container>
-              <img width="100%" src={reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].solution}/>
+            <Container flex={1}>
+              <Typography>액션 로그</Typography>
             </Container>
           </DialogContent>
         </Dialog>

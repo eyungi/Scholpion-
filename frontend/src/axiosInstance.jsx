@@ -12,10 +12,10 @@ const refreshAccessToken = async () => {
   try {
     const refreshToken = Cookies.get("refresh_token");
     if (!refreshToken) {
-      throw new Error("No refresh token available");
+      throw new Error("Not Authorized");
     }
 
-    const response = await axios.post(
+    const response = await axiosInstance.post(
       "/users/token/refresh/", // Replace with your refresh token endpoint
       { refresh: refreshToken }
     );

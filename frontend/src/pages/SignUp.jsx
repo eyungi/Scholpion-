@@ -30,7 +30,6 @@ const SignUp = () => {
 
   const handleSubmit = async () => {
     try {
-      console.log("보내는 데이터:", { ...formData, role });
       const response = await axios.post(
         "/users/register/",
         {

@@ -9,6 +9,8 @@ import Test from "./pages/Test";
 import TestDone from "./pages/TestDone";
 import ResultList from "./pages/ResultList";
 import Review from "./pages/Review";
+import FeedbackList from "./pages/FeedbackList.jsx";
+import FeedbackDetail from "./pages/FeedbackDetail.jsx";
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
         <Route path="/done" element={<TestDone />} />
         <Route path="/resultlist" element={<ResultList />} />
         <Route path="/review/:id" element={<Review />} />
+        <Route path="/feedbacks" element={<FeedbackList />} />
+        <Route path="/feedbacks/:id" element={<FeedbackDetail/>} />
         <Route path="/forgotpwd" element={<ForgotPwd />} />
       </Routes>
     </>

@@ -156,3 +156,28 @@ class RecommendedExamView(viewsets.ModelViewSet):
         # 직렬화 및 응답
         serializer = self.get_serializer(recommended_exam)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class FeedBackViewSet(viewsets.ModelViewSet):
+    queryset = SolvedExam.objects.all()
+    serializer_class = SolvedExamSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return SolvedExam.objects.filter(Q(teacher=None) | Q(teacher=self.request.user.teacher))
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        serialized_data = serializer.data
+
+        # 응답에 기존 문제의 정답을 추가해서 내보냄
+        solved_problem_ids = [solved_problem['prob'] for solved_problem in serializer.data['problems']] # 푼 문제의 id를 한번에 뽑아냄
+        answers = Prob.objects.filter(prob_id__in=solved_problem_ids).values('prob_id', 'answer') # 푼 문제의 id와 답을 한번에 가져옴
+        answers_dict = {item['prob_id']: item['answer'] for item in answers} # 사전 형태로 저장
+
+        for problem in serialized_data['problems']:
+            prob_id = problem['prob']
+            problem['answer'] = answers_dict[prob_id]
+
+        return Response(serialized_data)

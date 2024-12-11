@@ -23,10 +23,7 @@ class ExamProbAdmin(admin.ModelAdmin):
         return obj.exam.exam_name
 
 class OptionAdmin(admin.ModelAdmin):
-    list_display = ('option_id', 'exam_name', 'option_seq', 'option_text')
-
-    def exam_name(self, obj):
-        return obj.prob.examprob.exam.exam_name
+    list_display = ('option_id', 'prob', 'option_seq', 'option_text')
 
 
 class SolvedProbAdmin(admin.ModelAdmin):

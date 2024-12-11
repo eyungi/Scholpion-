@@ -9,5 +9,16 @@
   <body style="margin: 0; padding: 0; height: 100%;">
     <div id="root" style="height: 100%;"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      MathJax = {
+        tex: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+        svg: {
+          fontCache: 'global'
+        }
+      };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async src="/tex-svg.js"></script>
   </body>
 </html>

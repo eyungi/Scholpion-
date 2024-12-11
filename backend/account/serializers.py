@@ -28,10 +28,11 @@ class UserSerializer(serializers.ModelSerializer):
 class TeacherSerializer(UserSerializer):
     subject = serializers.CharField(required=True)
     institution = serializers.CharField(required=True, allow_blank=True)
+    role = serializers.CharField(default="teacher", read_only = True)
 
     class Meta(UserSerializer.Meta):
         model = Teacher
-        fields = UserSerializer.Meta.fields + ('institution', 'subject')
+        fields = UserSerializer.Meta.fields + ('institution', 'subject', 'role',)
 
     def create(self, validated_data):
         teacher = Teacher.objects.create(
@@ -53,6 +54,7 @@ class TeacherSerializer(UserSerializer):
 class StudentSerializer(UserSerializer):
     school = serializers.CharField(required=True, allow_blank=True)
     grade = serializers.CharField(required=True)
+    role = serializers.CharField(default="student", read_only=True)
 
     class Meta(UserSerializer.Meta):
         model = Student
