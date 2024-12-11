@@ -72,10 +72,6 @@ class SolvedExam(models.Model):
     score = models.IntegerField(null=True)
     solved_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['exam', 'student'], name='unique_solved_exam')
-        ]
 
 class SolvedProb(models.Model):
     solved_prob_id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
