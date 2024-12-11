@@ -1,4 +1,4 @@
-name: Scholpion Front Deployment
+name: Deployment
 on:
   push:
     branches: ["dev"]
