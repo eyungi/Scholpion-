@@ -21,6 +21,7 @@ import tableData from "../MockTableData";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axiosInstance from "../axiosInstance";
+import ContentRenderer from "../ContentRender.jsx";
 
 const Review = () => {
   const params = useParams();
@@ -66,19 +67,6 @@ const Review = () => {
     return `${year}년 ${month}월 ${day}`;
   };
 
-  // const onOpenDialog = () => {
-  //   setOpen(true);
-  //   const probId = reviewData.problems[dialogSeq - 1].prob;
-  //   const getProblem = async () => {
-  //     const res = await axiosInstance.get(
-  //       `/exams/${reviewData.exam}/problems/${probId}/`
-  //     );
-  //     setProblem(res.data);
-  //     console.log("problem ", res.data);
-  //   };
-  //   getProblem();
-  // };
-
   useEffect(() => {
     if (open && dialogSeq > 0) {
       const fetchProblemData = async () => {
@@ -93,7 +81,7 @@ const Review = () => {
           }
 
           const res = await axiosInstance.get(
-            `/exams/${reviewData.exam}/problems/${probId}/`
+            `/exams/${reviewData.exam_obj.exam_id}/problems/${probId}/`
           );
           setProblem(res.data);
         } catch (error) {
@@ -140,7 +128,7 @@ const Review = () => {
             )}`}</Typography>
             <Typography>{`걸린 시간 : ${reviewData.time}`}</Typography>
             <Typography>{`점수 : ${reviewData.score}`}</Typography>
-            <Typography>{`피드백 : ${reviewData.feedback}`}</Typography>
+            <Typography>{`피드백 : ${reviewData.feedback !== null ? "완료" : "미완"}`}</Typography>
           </Box>
           <TableContainer>
             <Table sx={{ minWidth: 650, mt: "15px" }} size="small">
@@ -231,18 +219,19 @@ const Review = () => {
           <DialogContent
             sx={{
               display: "flex",
+              flexDirection: "column",
               minWidth: "550px",
               minHeight: "300px",
             }}
           >
-            <Container sx={{ width: "75%" }}>
+            <Container sx={{paddingLeft: "0!important", flex: 2}}>
               <Box
                 sx={{
                   boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                   p: "10px",
                 }}
               >
-                <Typography>{problem.question}</Typography>
+                <ContentRenderer content={problem.question} />
               </Box>
               {problem.options && problem.options.length > 0 ? (
                 <Stack spacing={2.5} sx={{ mt: "10px" }}>
@@ -251,7 +240,7 @@ const Review = () => {
                       sx={{
                         justifyContent: "flex-start",
                         display: "flex",
-                        fontSize: "20px",
+                        fontSize: "14px",
                         alignItems: "center",
                         color: "black",
                       }}
@@ -259,8 +248,8 @@ const Review = () => {
                     >
                       <Avatar
                         sx={{
-                          width: 24,
-                          height: 24,
+                          width: 18,
+                          height: 18,
                           margin: "6px",
                           marginRight: "12px",
                           backgroundColor: "white",
@@ -280,34 +269,47 @@ const Review = () => {
                 </Box>
               )}
             </Container>
-            <Box>
-              <Stack spacing={0.5} sx={{ mt: "10px" }}>
-                <Typography>내응답</Typography>
-                <Typography>
-                  {reviewData.problems && reviewData.problems[dialogSeq - 1]
-                    ? reviewData.problems[dialogSeq - 1].response
-                    : "응답 없음"}
-                </Typography>
-                <Typography>정답</Typography>
-                <Typography>
-                  {reviewData.problems && reviewData.problems[dialogSeq - 1]
-                    ? reviewData.problems[dialogSeq - 1].answer
-                    : "응답 없음"}
-                </Typography>
-                <Typography>정답 여부(정답률)</Typography>
-                <Typography>
-                  {reviewData.problems && reviewData.problems[dialogSeq - 1]
-                    ? reviewData.problems[dialogSeq - 1].correctness
-                      ? "예 (53%)"
-                      : "아니오 (53%)"
-                    : "데이터 없음"}
-                </Typography>
-                <Typography>소요 시간 (평균)</Typography>
-                <Typography>3분 (1분)</Typography>
-                <Typography>액션 (평균)</Typography>
-                <Typography>10번 (3번)</Typography>
+            <Container sx={{ marginTop: "8px", padding: "0!important", flex: 1 }}>
+              <Stack sx={{ mt: "10px", display: "flex", flexDirection: "row" }}>
+                <Box>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px", whiteSpace: "nowrap"}}>내 응답</Typography>
+                  <Typography>
+                    {reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].response
+                        ? reviewData.problems[dialogSeq - 1].response
+                        : "응답 없음"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px", whiteSpace: "nowrap"}}>정답</Typography>
+                  <Typography>
+                    {reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].answer
+                        ? reviewData.problems[dialogSeq - 1].answer
+                        : "응답 없음"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>정답 여부(정답률)</Typography>
+                  <Typography>
+                    {reviewData.problems && reviewData.problems[dialogSeq - 1]
+                        ? reviewData.problems[dialogSeq - 1].correctness
+                            ? "예 (53%)"
+                            : "아니오 (53%)"
+                        : "데이터 없음"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>소요 시간 (평균)</Typography>
+                  <Typography>3분 (1분)</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>액션 (평균)</Typography>
+                  <Typography>10번 (3번)</Typography>
+                </Box>
               </Stack>
-            </Box>
+            </Container>
+            <Container>
+              <img width="100%" src={reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].solution}/>
+            </Container>
           </DialogContent>
         </Dialog>
       </Container>

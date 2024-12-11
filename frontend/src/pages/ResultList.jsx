@@ -17,23 +17,7 @@ const ResultList = () => {
         ]);
 
         const solvedExams = solvedExamsResponse.data;
-        const exams = examsResponse.data;
-        setReviewArray(solvedExams);
-
-        const combinedData = exams.map((exam) => {
-          const isSolved = solvedExams.find((solvedExam) => {
-            return solvedExam.exam === exam.exam_id;
-          });
-
-          return {
-            ...exam,
-            feedback: Boolean(isSolved), // 평가 완료 여부
-            solved_at: isSolved ? isSolved.solved_at : null,
-            solve_exam_id: isSolved ? isSolved.solved_exam_id : null,
-          };
-        });
-        console.log(combinedData);
-        setCombinedExams(combinedData);
+        setCombinedExams(solvedExams);
       } catch (error) {
         setError(error.message || "데이터를 가져오지 못했습니다");
       }
@@ -88,13 +72,13 @@ const ResultList = () => {
                   display: "flex",
                   justifyContent: "space-between",
                 }}
-                key={item.exam_id}
+                key={item.solved_exam_id}
                 onClick={() => {
-                  item.feedback && nav(`/review/${item.solve_exam_id}`);
+                  nav(`/review/${item.solved_exam_id}`);
                 }}
               >
                 <Box sx={{ textAlign: "left" }}>
-                  <Typography variant="h5">{item.exam_name}</Typography>
+                  <Typography variant="h5">{item.exam_obj.exam_name}</Typography>
                   <Typography fontSize={"13px"}>
                     {item.feedback ? formatDateTime(item.solved_at) : null}
                   </Typography>
