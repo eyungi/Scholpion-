@@ -9,7 +9,7 @@ import {
   Link,
   Typography,
   Container,
-  Box, Modal, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
+  Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
 } from "@mui/material";
 import scholpionImage from "../assets/scholpion.png";
 
@@ -57,6 +57,7 @@ function LogIn() {
             height: "100%",
             objectFit: "cover",
           }}
+          alt={"Logo"}
         />
       </Grid2>
       <Grid2
@@ -134,7 +135,7 @@ function LogIn() {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Disagree</Button>
+          <Button onClick={() => setOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
     </Grid2>
