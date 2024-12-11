@@ -3,8 +3,6 @@ from rest_framework.validators import UniqueValidator
 from rest_framework import serializers
 from .models import User, Teacher, Student
 
-# serializers.py
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(required = True, validators=[UniqueValidator(queryset=User.objects.all())])
@@ -24,11 +22,12 @@ class UserSerializer(serializers.ModelSerializer):
                 setattr(instance, key, value)
         instance.save()
         return instance
-    
+
+
 class TeacherSerializer(UserSerializer):
     subject = serializers.CharField(required=True)
     institution = serializers.CharField(required=True, allow_blank=True)
-    role = serializers.CharField(default="teacher", read_only = True)
+    role = serializers.CharField(default="teacher", read_only=True)
 
     class Meta(UserSerializer.Meta):
         model = Teacher
@@ -47,9 +46,10 @@ class TeacherSerializer(UserSerializer):
         return teacher    
     
     def validate_subject(self, data):
-        if (data not in dict(Teacher.SUBJECT_CHOICES)):
+        if data not in dict(Teacher.SUBJECT_CHOICES):
             raise serializers.ValidationError("유효하지 않은 과목입니다.")
         return data
+
 
 class StudentSerializer(UserSerializer):
     school = serializers.CharField(required=True, allow_blank=True)
@@ -73,6 +73,6 @@ class StudentSerializer(UserSerializer):
         return student
     
     def validate_grade(self, data):
-        if (data not in dict(Student.GRADE_CHOICES)):
+        if data not in dict(Student.GRADE_CHOICES):
             raise serializers.ValidationError("유효하지 않은 학년입니다.")
         return data

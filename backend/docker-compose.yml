@@ -18,7 +18,7 @@ services:
   # Django Application
   web:
     platform: linux/amd64
-    image: wingit_backend_app:v0.0.1
+    image: wingit_backend_app:v0.0.3
     build:
       context: .
       dockerfile: Dockerfile
