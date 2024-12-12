@@ -223,7 +223,7 @@ const Review = () => {
             결과 리스트로 돌아가기
           </Button>
         </Box>
-        <Dialog open={open} onClose={() => setOpen(false)}>
+        <Dialog fullWidth maxWidth="md" open={open} onClose={() => setOpen(false)}>
           <DialogTitle>{dialogSeq}번문제</DialogTitle>
           <DialogContent
             sx={{
@@ -233,88 +233,90 @@ const Review = () => {
               minHeight: "300px",
             }}
           >
-            <Container sx={{paddingLeft: "0!important", flex: 2}}>
-              <Box
-                sx={{
-                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                  p: "10px",
-                }}
-              >
-                <ContentRenderer content={problem.question} />
-              </Box>
-              {problem.options && problem.options.length > 0 ? (
-                <Stack spacing={2.5} sx={{ mt: "10px" }}>
-                  {problem.options.map((item) => (
-                    <Box
-                      sx={{
-                        justifyContent: "flex-start",
-                        display: "flex",
-                        fontSize: "14px",
-                        alignItems: "center",
-                        color: "black",
-                      }}
-                      key={item.option_seq}
-                    >
-                      <Avatar
-                        sx={{
-                          width: 18,
-                          height: 18,
-                          margin: "6px",
-                          marginRight: "12px",
-                          backgroundColor: "white",
-                          color: "black",
-                          border: "2px solid black",
-                        }}
-                      >
-                        {item.option_seq}
-                      </Avatar>
-                      <div dangerouslySetInnerHTML={{ __html: item.option_text }} />
+            <Container sx={{ display: "flex", flexDirection: "row" }}>
+              <Container sx={{paddingLeft: "0!important", flex: 2}}>
+                <Box
+                    sx={{
+                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                      p: "10px",
+                    }}
+                >
+                  <ContentRenderer content={problem.question} />
+                </Box>
+                {problem.options && problem.options.length > 0 ? (
+                    <Stack spacing={2.5} sx={{ mt: "10px" }}>
+                      {problem.options.map((item) => (
+                          <Box
+                              sx={{
+                                justifyContent: "flex-start",
+                                display: "flex",
+                                fontSize: "14px",
+                                alignItems: "center",
+                                color: "black",
+                              }}
+                              key={item.option_seq}
+                          >
+                            <Avatar
+                                sx={{
+                                  width: 18,
+                                  height: 18,
+                                  margin: "6px",
+                                  marginRight: "12px",
+                                  backgroundColor: "white",
+                                  color: "black",
+                                  border: "2px solid black",
+                                }}
+                            >
+                              {item.option_seq}
+                            </Avatar>
+                            <div dangerouslySetInnerHTML={{ __html: item.option_text }} />
+                          </Box>
+                      ))}
+                    </Stack>
+                ) : (
+                    <Box sx={{ mt: "10px" }}>
+                      <Typography>주관식입니다</Typography>
                     </Box>
-                  ))}
+                )}
+              </Container>
+              <Container sx={{ marginTop: "8px", padding: "0!important", flex: 1 }}>
+                <Stack sx={{ mt: "10px", display: "flex" }}>
+                  <Box>
+                    <Typography sx={{backgroundColor: "black", color: "white", padding: "4px", whiteSpace: "nowrap"}}>내 응답</Typography>
+                    <Typography>
+                      {reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].response
+                          ? reviewData.problems[dialogSeq - 1].response
+                          : "응답 없음"}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{backgroundColor: "black", color: "white", padding: "4px", whiteSpace: "nowrap"}}>정답</Typography>
+                    <Typography>
+                      {reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].answer
+                          ? reviewData.problems[dialogSeq - 1].answer
+                          : "응답 없음"}
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>정답 여부(정답률)</Typography>
+                    <Typography>
+                      {reviewData.problems && reviewData.problems[dialogSeq - 1]
+                          ? reviewData.problems[dialogSeq - 1].correctness
+                              ? "예"
+                              : "아니오"
+                          : "데이터 없음"}({(reviewData.problems && reviewData.problems[dialogSeq - 1].correct_rate * 100).toFixed(2)}%)
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>소요 시간(평균 시간)</Typography>
+                    <Typography>{reviewData.problems && dialogSeq > 0 ? reviewData.problems[dialogSeq - 1].time : 0}초({(reviewData.problems && dialogSeq > 0 ? reviewData.problems[dialogSeq - 1].average_time : 0).toFixed(2)}초)</Typography>
+                  </Box>
+                  <Box>
+                    <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>액션(평균 횟수)</Typography>
+                    <Typography>{reviewData.logs && reviewData.logs.filter(item => item.prob_seq === dialogSeq).length}번({(reviewData.problems && dialogSeq > 0 ? reviewData.problems[dialogSeq - 1].average_actions : 0).toFixed(2)}번)</Typography>
+                  </Box>
                 </Stack>
-              ) : (
-                <Box sx={{ mt: "10px" }}>
-                  <Typography>주관식입니다</Typography>
-                </Box>
-              )}
-            </Container>
-            <Container sx={{ marginTop: "8px", padding: "0!important", flex: 1 }}>
-              <Stack sx={{ mt: "10px", display: "flex", flexDirection: "row" }}>
-                <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px", whiteSpace: "nowrap"}}>내 응답</Typography>
-                  <Typography>
-                    {reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].response
-                        ? reviewData.problems[dialogSeq - 1].response
-                        : "응답 없음"}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px", whiteSpace: "nowrap"}}>정답</Typography>
-                  <Typography>
-                    {reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].answer
-                        ? reviewData.problems[dialogSeq - 1].answer
-                        : "응답 없음"}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>정답 여부</Typography>
-                  <Typography>
-                    {reviewData.problems && reviewData.problems[dialogSeq - 1]
-                        ? reviewData.problems[dialogSeq - 1].correctness
-                            ? "예"
-                            : "아니오"
-                        : "데이터 없음"}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>소요 시간</Typography>
-                  <Typography>{reviewData.problems && dialogSeq > 0 ? reviewData.problems[dialogSeq - 1].time : 0}초</Typography>
-                </Box>
-                <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>액션</Typography>
-                  <Typography>{reviewData.logs && reviewData.logs.filter(item => item.prob_seq === dialogSeq).length}번</Typography>
-                </Box>
-              </Stack>
+              </Container>
             </Container>
             <Container>
               <img width="100%" src={reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].solution}/>

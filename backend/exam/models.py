@@ -1,4 +1,9 @@
+from email.policy import default
+
 from django.db import models
+from django.db.models import Count
+from django.db.models.aggregates import Avg
+
 from account.models import Student, Teacher, User
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
@@ -59,6 +64,7 @@ class Option(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['prob_id', 'option_seq'], name='unique_option')
         ]
+        ordering = ['prob_id', 'option_seq']
 
 class SolvedExam(models.Model):
     solved_exam_id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
@@ -88,6 +94,25 @@ class SolvedProb(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['solved_exam', 'solved_prob_id'], name='unique_solved_prob')
         ]
+
+    @property
+    def correct_rate(self):
+        total = self.prob.solvedprob_set.all()
+        return total.filter(correctness=True).count() / total.count()
+
+    @property
+    def average_time(self):
+        total = self.prob.solvedprob_set.all()
+        return total.aggregate(Avg('time', default=0))['time__avg']
+
+
+    @property
+    def average_actions(self):
+        exam_prob = ExamProb.objects.get(exam=self.solved_exam.exam, prob=self.prob)
+        total = Log.objects.filter(solved_exam__exam=exam_prob.exam, prob_seq=exam_prob.prob_seq).count()
+        mine = Log.objects.filter(solved_exam=self.solved_exam, prob_seq=exam_prob.prob_seq).count()
+        return total / mine
+
 
 class Comment(models.Model):
     comment_id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
