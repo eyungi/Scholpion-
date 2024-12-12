@@ -288,9 +288,9 @@ const Test = () => {
     if (!isEraserActive) {
       ctx.beginPath();
       ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-      insertLog("연습장 작성", new Date().getTime());
+      insertLog("연습장 작성", number, new Date().getTime());
     } else {
-      insertLog("연습장 지우기", new Date().getTime());
+      insertLog("연습장 지우기", number, new Date().getTime());
     }
   };
 
