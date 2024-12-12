@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Subject, Category, Exam, Prob, ExamProb, Option, SolvedProb, SolvedExam, Comment
+from .models import Subject, Category, Exam, Prob, ExamProb, Option, SolvedProb, SolvedExam, Comment, Log
+
 
 class SubjectAdmin(admin.ModelAdmin):
     list_display = ('subject',)
@@ -27,7 +28,7 @@ class OptionAdmin(admin.ModelAdmin):
 
 
 class SolvedProbAdmin(admin.ModelAdmin):
-    list_display = ('solved_prob_id', 'exam_name', 'solution', 'response', 'correctness')
+    list_display = ('solved_prob_id', 'exam_name', 'response', 'correctness')
 
     def exam_name(self, obj):
         return obj.solved_exam.exam.exam_name
@@ -50,3 +51,6 @@ admin.site.register(ExamProb, ExamProbAdmin)
 admin.site.register(SolvedProb, SolvedProbAdmin)
 admin.site.register(SolvedExam, SolvedExamAdmin)
 admin.site.register(Comment, CommentAdmin)
+@admin.register(Log)
+class LogAdmin(admin.ModelAdmin):
+    list_display = ('solved_exam', 'prob_seq', 'action', 'timestamp')

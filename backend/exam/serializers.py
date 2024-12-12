@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 from drf_writable_nested import WritableNestedModelSerializer
-from .models import Category, Option, Prob, Exam, ExamProb, SolvedProb, SolvedExam, Comment
+from .models import Category, Option, Prob, Exam, ExamProb, SolvedProb, SolvedExam, Comment, Log
 from account.models import User, Teacher, Student
 from django.db import transaction
 
@@ -159,12 +159,20 @@ class SolvedProbSerializer(serializers.ModelSerializer):
     correctness = serializers.BooleanField(required=False)
     class Meta:
         model = SolvedProb
-        fields = ('solved_prob_id', 'prob', 'solution', 'response', 'correctness')
+        fields = ('solved_prob_id', 'prob', 'solution', 'response', 'time', 'correctness')
+
+
+class LogSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Log
+        fields = ('prob_seq', 'action', 'timestamp',)
 
 
 # 푼 시험지 시리얼라이저
 class SolvedExamSerializer(serializers.ModelSerializer):
     problems = SolvedProbSerializer(many=True)
+    logs = LogSerializer(many=True)
     comments = CommentSerializer(many=True, read_only=True)
     score = serializers.IntegerField(required=False) # 직접 계산할 필드
     exam_obj = ExamSerializer(source='exam', read_only=True)
@@ -172,7 +180,7 @@ class SolvedExamSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = SolvedExam
-        fields = ('solved_exam_id', 'exam', 'exam_obj', 'student', 'teacher', 'feedback', 'time', 'score','solved_at', 'problems', 'comments', 'comments',)
+        fields = ('solved_exam_id', 'exam', 'exam_obj', 'student', 'teacher', 'feedback', 'time', 'score','solved_at', 'problems', 'logs', 'comments', 'comments',)
         read_only_fields = ['student']  # student는 서버에서 추가
 
     def __init__(self, *args, **kwargs):
@@ -186,6 +194,7 @@ class SolvedExamSerializer(serializers.ModelSerializer):
         validated_data['student'] = self.context['request'].user.student
         # solved_problems는 일단 제외하고 solved_exam 생성
         problems_data = validated_data.pop('problems')
+        logs = validated_data.pop('logs')
         solved_exam = SolvedExam.objects.create(**validated_data)
         # solved_problem 생성
         for problem_data in problems_data:
@@ -198,6 +207,9 @@ class SolvedExamSerializer(serializers.ModelSerializer):
             else:
                 problem_data['correctness'] = False
             SolvedProb.objects.create(solved_exam=solved_exam, **problem_data)
+        for log in logs:
+            log['solved_exam'] = solved_exam
+        Log.objects.bulk_create([Log(**log) for log in logs])
         # score 필드 값 계산
         solved_exam.score = self.calculate_score(problems_data)
         solved_exam.save()

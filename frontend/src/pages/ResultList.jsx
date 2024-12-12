@@ -59,7 +59,7 @@ const ResultList = () => {
           >
             확인할 결과를 선택해주세요
           </Typography>
-          <Stack spacing={2} sx={{ mt: "20px" }}>
+          <Stack spacing={2} sx={{ mt: "20px", overflowY: "scroll" }}>
             {combinedExams.map((item) => (
               <Button
                 variant="contained"
@@ -72,6 +72,7 @@ const ResultList = () => {
                   display: "flex",
                   justifyContent: "space-between",
                 }}
+                style={{ margin: "8px" }}
                 key={item.solved_exam_id}
                 onClick={() => {
                   nav(`/review/${item.solved_exam_id}`);

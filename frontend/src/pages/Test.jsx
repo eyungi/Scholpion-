@@ -30,7 +30,6 @@ const Test = () => {
   const [answer, setAnswer] = useState("");
   const [answerSheet, setAnswerSheet] = useState({
     exam: "",
-    time: "",
     problems: [],
   });
   const [error, setError] = useState(false);
@@ -51,8 +50,17 @@ const Test = () => {
   const canvasRef = useRef([]);
   const isDrawingRef = useRef(false);
   const [isEraserActive, setIsEraserActive] = useState(false);
+  const [logs, setLogs] = useState([]);
 
   const examId = params.id;
+
+  const insertLog = (action, question_seq, timestamp) => {
+    setLogs(prev => [...prev, {
+      action: action,
+      prob_seq: question_seq,
+      timestamp: timestamp,
+    }]);
+  }
 
   useEffect(() => {
     const getProblems = async () => {
@@ -67,16 +75,13 @@ const Test = () => {
           prob: problem.prob_id,
           response: "",
           solution: "", // 초기 캔버스 데이터를 비워둠
+          time: 0,
         }));
         const updatedAnswerSheet = {
           exam: params.id,
-          time: "",
           problems: initialProblems,
         };
-
-        console.log("초기화된 answerSheet:", updatedAnswerSheet);
         setAnswerSheet(updatedAnswerSheet);
-        console.log("문제들", response.data);
       } catch (error) {
         setError(err.message || "데이터를 가져오지 못했습니다");
       } finally {
@@ -129,6 +134,8 @@ const Test = () => {
   const startTimer = () => {
     clearInterval(timerId.current);
 
+    insertLog("문제 진입", number, new Date().getTime());
+    elapsedTimeRef.current = answerSheet.problems[number - 1].time;
     startTimeRef.current = Date.now() - elapsedTimeRef.current * 1000;
     timerId.current = setInterval(() => {
       const elapsedTime = Math.floor(
@@ -143,10 +150,11 @@ const Test = () => {
   };
 
   useEffect(() => {
+    if (problems.length === 0 || number < 1) return;
     startTimer();
 
     return () => clearInterval(timerId.current);
-  }, []);
+  }, [problems, number]);
 
   const stopTimer = () => {
     clearInterval(timerId.current);
@@ -167,9 +175,39 @@ const Test = () => {
 
   const onClickNext = () => {
     setAnswer("");
+    setAnswerSheet((prevAnswerSheet) => {
+      const updatedProblems = [...prevAnswerSheet.problems];
+
+      if (updatedProblems[number - 1]) {
+        updatedProblems[number - 1].time = elapsedTimeRef.current;
+      }
+
+      return {
+        ...prevAnswerSheet,
+        problems: updatedProblems,
+      };
+    });
+    insertLog("다른 문제로 이동", number, new Date().getTime());
     setNumber((prev) => prev + 1);
-    console.log("onClickNext-answerSheet : ", answerSheet);
   };
+
+  const onClickPrev = () => {
+    setAnswer("");
+    setAnswerSheet((prevAnswerSheet) => {
+      const updatedProblems = [...prevAnswerSheet.problems];
+
+      if (updatedProblems[number - 1]) {
+        updatedProblems[number - 1].time = elapsedTimeRef.current;
+      }
+
+      return {
+        ...prevAnswerSheet,
+        problems: updatedProblems,
+      };
+    });
+    setNumber(number - 1);
+    insertLog("다른 문제로 이동", number, new Date().getTime());
+  }
 
   const onChangeAnswer = (updatedAnswer) => {
     setAnswerSheet((prevAnswerSheet) => {
@@ -184,10 +222,28 @@ const Test = () => {
         problems: updatedProblems,
       };
     });
+    if (updatedAnswer === "") {
+      insertLog(`선택지 해제`, number, new Date().getTime());
+    } else {
+      insertLog(`선택지 변경 : ${updatedAnswer}`, number, new Date().getTime());
+    }
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
+    insertLog("시험지 제출", 0, new Date().getTime());
     const updatedProblems = [...answerSheet.problems];
+    setAnswerSheet((prevAnswerSheet) => {
+      const updatedProblems = [...prevAnswerSheet.problems];
+
+      if (updatedProblems[number - 1]) {
+        updatedProblems[number - 1].time = elapsedTimeRef.current;
+      }
+
+      return {
+        ...prevAnswerSheet,
+        problems: updatedProblems,
+      };
+    });
 
     canvasRef.current.forEach((canvas, index) => {
       if (canvas) {
@@ -202,18 +258,17 @@ const Test = () => {
       }
     });
 
-    const formattedTime = `${String(hour).padStart(2, "0")}:${String(
-      min
-    ).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
+    // const formattedTime = `${String(hour).padStart(2, "0")}:${String(
+    //   min
+    // ).padStart(2, "0")}:${String(sec).padStart(2, "0")}`;
 
     const updatedAnswerSheet = {
       ...answerSheet,
-      time: formattedTime,
+      time: 0,
       problems: updatedProblems,
+      logs: logs,
     };
-
-    console.log("제출", updatedAnswerSheet);
-    axiosInstance.post("/solved-exams/", updatedAnswerSheet);
+    await axiosInstance.post("/solved-exams/", updatedAnswerSheet);
     nav("/done");
   };
 
@@ -223,6 +278,7 @@ const Test = () => {
 
   //풀이 메모장 관련
   const startDrawing = (e) => {
+
     const canvas = canvasRef.current[number - 1];
     const ctx = canvas?.getContext("2d");
     if (!ctx) {
@@ -232,6 +288,9 @@ const Test = () => {
     if (!isEraserActive) {
       ctx.beginPath();
       ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+      insertLog("연습장 작성", new Date().getTime());
+    } else {
+      insertLog("연습장 지우기", new Date().getTime());
     }
   };
 
@@ -257,6 +316,10 @@ const Test = () => {
 
   const stopDrawing = () => {
     isDrawingRef.current = false;
+    if (!isEraserActive)
+      insertLog("연습장 작성 끝", new Date().getTime());
+    else
+      insertLog("연습장 지우기 끝", new Date().getTime());
   };
 
   const resetCanvas = () => {
@@ -265,6 +328,7 @@ const Test = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // ctx.fillStyle = "#ffffff";
     // ctx.fillRect(0, 0, canvas.width, canvas.height);
+    insertLog("연습장 리셋", new Date().getTime());
   };
 
   const toggleEraser = () => {
@@ -314,10 +378,11 @@ const Test = () => {
                     const updatedAnswer = item.option_seq;
                     if (answer === updatedAnswer) {
                       setAnswer(""); // 답변 업데이트
+                      onChangeAnswer(""); // `answerSheet` 업데이트
                     } else {
                       setAnswer(updatedAnswer); // 답변 업데이트
+                      onChangeAnswer(updatedAnswer); // `answerSheet` 업데이트
                     }
-                    onChangeAnswer(updatedAnswer); // `answerSheet` 업데이트
                   }}
                 >
                   <Avatar
@@ -333,7 +398,7 @@ const Test = () => {
                   >
                     {item.option_seq}
                   </Avatar>
-                  {item.option_text}
+                  <div dangerouslySetInnerHTML={{ __html: item.option_text }} />
                 </Button>
               ))}
             </Stack>
@@ -362,12 +427,12 @@ const Test = () => {
             justifyContent: "space-between",
           }}
         >
-          <Typography sx={{ color: "skyblue" }}>
-            응시시간 : {hour}시간 {min}분 {sec}초
-          </Typography>
+          {/*<Typography sx={{ color: "skyblue" }}>*/}
+          {/*  응시시간 : {hour}시간 {min}분 {sec}초*/}
+          {/*</Typography>*/}
           <Box>
-            {problem.number !== 1 && (
-              <Button variant="contained" onClick={() => setNumber(number - 1)}>
+            {problem.prob_seq !== 1 && (
+              <Button variant="contained" onClick={() => onClickPrev()}>
                 이전
               </Button>
             )}
@@ -375,10 +440,7 @@ const Test = () => {
               <Button
                 variant="contained"
                 sx={{ marginLeft: "5px" }}
-                onClick={() => {
-                  stopTimer();
-                  setOpen(true);
-                }}
+                onClick={() => setOpen(true)}
               >
                 제출
               </Button>
@@ -466,7 +528,7 @@ const Test = () => {
               onMouseDown={startDrawing}
               onMouseMove={draw}
               onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
+              // onMouseLeave={stopDrawing}
             />
           ))}
         </Box>
