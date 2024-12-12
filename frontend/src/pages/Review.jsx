@@ -265,7 +265,7 @@ const Review = () => {
                       >
                         {item.option_seq}
                       </Avatar>
-                      {item.option_text}
+                      <div dangerouslySetInnerHTML={{ __html: item.option_text }} />
                     </Box>
                   ))}
                 </Stack>
@@ -294,18 +294,18 @@ const Review = () => {
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>정답 여부(정답률)</Typography>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>정답 여부</Typography>
                   <Typography>
                     {reviewData.problems && reviewData.problems[dialogSeq - 1]
                         ? reviewData.problems[dialogSeq - 1].correctness
-                            ? "예 (53%)"
-                            : "아니오 (53%)"
+                            ? "예"
+                            : "아니오"
                         : "데이터 없음"}
                   </Typography>
                 </Box>
                 <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>소요 시간 (평균)</Typography>
-                  <Typography>3분 (1분)</Typography>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>소요 시간</Typography>
+                  <Typography>{reviewData.problems && dialogSeq > 0 ? reviewData.problems[dialogSeq - 1].time : 0}초</Typography>
                 </Box>
                 <Box>
                   <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>액션 (평균)</Typography>
