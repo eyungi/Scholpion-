@@ -159,7 +159,7 @@ class SolvedProbSerializer(serializers.ModelSerializer):
     correctness = serializers.BooleanField(required=False)
     class Meta:
         model = SolvedProb
-        fields = ('solved_prob_id', 'prob', 'solution', 'response', 'time', 'correctness')
+        fields = ('solved_prob_id', 'prob', 'solution', 'response', 'time', 'correctness', 'correct_rate', 'average_time', 'average_actions',)
 
 
 class LogSerializer(serializers.ModelSerializer):
