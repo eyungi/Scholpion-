@@ -309,7 +309,7 @@ const Review = () => {
                 </Box>
                 <Box>
                   <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>액션</Typography>
-                  <Typography>{reviewData.logs && reviewData.logs.filter(item => item.prob_seq === dialogSeq).length}</Typography>
+                  <Typography>{reviewData.logs && reviewData.logs.filter(item => item.prob_seq === dialogSeq).length}번</Typography>
                 </Box>
               </Stack>
             </Container>
