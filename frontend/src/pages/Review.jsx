@@ -22,6 +22,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axiosInstance from "../axiosInstance";
 import ContentRenderer from "../ContentRender.jsx";
+import * as React from "react";
 
 const Review = () => {
   const params = useParams();
@@ -96,6 +97,8 @@ const Review = () => {
     }
   }, [dialogSeq, open]);
 
+  const total_time = reviewData.problems && reviewData.problems.reduce((acc, cur) => acc + cur.time, 0);
+
   return (
     <div>
       <Container
@@ -126,7 +129,7 @@ const Review = () => {
             <Typography>{`응시 날짜 : ${formatDateTime(
               reviewData.solved_at
             )}`}</Typography>
-            <Typography>{`걸린 시간 : ${reviewData.time}`}</Typography>
+            <Typography>{`걸린 시간 : ${(total_time / 60).toFixed()}분 ${(total_time % 60).toFixed()}초`}</Typography>
             <Typography>{`점수 : ${reviewData.score}`}</Typography>
             <Typography>{`피드백 : ${reviewData.feedback !== null ? "완료" : "미완"}`}</Typography>
           </Box>
