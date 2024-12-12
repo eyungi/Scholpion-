@@ -283,6 +283,43 @@ const Review = () => {
               </Box>
             </Container>
             <Container sx={{ flex: "1!important"}}>
+              <Stack sx={{ mt: "10px", display: "flex" }}>
+                <Box>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px", whiteSpace: "nowrap"}}>학생 응답</Typography>
+                  <Typography>
+                    {reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].response
+                        ? reviewData.problems[dialogSeq - 1].response
+                        : "응답 없음"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px", whiteSpace: "nowrap"}}>정답</Typography>
+                  <Typography>
+                    {reviewData.problems && reviewData.problems[dialogSeq - 1] && reviewData.problems[dialogSeq - 1].answer
+                        ? reviewData.problems[dialogSeq - 1].answer
+                        : "응답 없음"}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>정답 여부(정답률)</Typography>
+                  <Typography>
+                    {reviewData.problems && reviewData.problems[dialogSeq - 1]
+                        ? reviewData.problems[dialogSeq - 1].correctness
+                            ? "예"
+                            : "아니오"
+                        : "데이터 없음"}({(reviewData.problems ? reviewData.problems[dialogSeq - 1].correct_rate * 100 : 0).toFixed(2)}%)
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>소요 시간(평균 시간)</Typography>
+                  <Typography>{reviewData.problems && dialogSeq > 0 ? reviewData.problems[dialogSeq - 1].time : 0}초({(reviewData.problems && dialogSeq > 0 ? reviewData.problems[dialogSeq - 1].average_time : 0).toFixed(2)}초)</Typography>
+                </Box>
+                <Box>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>액션(평균 횟수)</Typography>
+                  <Typography>{reviewData.logs && reviewData.logs.filter(item => item.prob_seq === dialogSeq).length}번({(reviewData.problems && dialogSeq > 0 ? reviewData.problems[dialogSeq - 1].average_actions : 0).toFixed(2)}번)</Typography>
+                </Box>
+              </Stack>
+              <hr/>
               <Typography variant="h5">액션 로그</Typography>
               <ul style={{ padding: "8px", marginTop: 0, height: "100%" }}>
                 {reviewData.logs && reviewData.logs.filter(item => item.prob_seq === dialogSeq).map(item => (
