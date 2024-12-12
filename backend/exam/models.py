@@ -59,6 +59,7 @@ class Option(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['prob_id', 'option_seq'], name='unique_option')
         ]
+        ordering = ['prob_id', 'option_seq']
 
 class SolvedExam(models.Model):
     solved_exam_id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
