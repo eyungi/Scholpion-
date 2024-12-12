@@ -78,6 +78,7 @@ class SolvedProb(models.Model):
 
     solved_exam = models.ForeignKey(SolvedExam, on_delete=models.CASCADE, related_name='problems')
     prob = models.ForeignKey(Prob, on_delete=models.CASCADE)
+    time = models.IntegerField(default=0)
 
     solution = models.TextField()
     response = models.CharField(max_length=512, null=True, blank=True)
@@ -95,3 +96,10 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     content = models.TextField()
+
+
+class Log(models.Model):
+    solved_exam = models.ForeignKey(SolvedExam, on_delete=models.CASCADE, related_name='logs')
+    action = models.CharField(max_length=255)
+    prob_seq = models.IntegerField()
+    timestamp = models.CharField(max_length=255)
