@@ -47,7 +47,7 @@ const FeedbackList = () => {
                 >
                     피드백할 결과를 선택해주세요
                 </Typography>
-                <Stack spacing={2} sx={{ mt: "20px" }}>
+                <Stack spacing={2} sx={{ mt: "20px", overflowY: "scroll" }}>
                     {feedbacks.map((item) => (
                         <Button
                             variant="contained"
@@ -60,6 +60,7 @@ const FeedbackList = () => {
                                 display: "flex",
                                 justifyContent: "space-between",
                             }}
+                            style={{ margin: "8px" }}
                             key={item.solved_exam_id}
                             onClick={() => {
                                 navigate(`/feedbacks/${item.solved_exam_id}`);

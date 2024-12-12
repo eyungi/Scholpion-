@@ -174,8 +174,8 @@ const Review = () => {
                         <TableCell align="right">
                           {prob.correctness ? "예" : "아니오"}
                         </TableCell>
-                        <TableCell></TableCell>
-                        <TableCell></TableCell>
+                        <TableCell  align="right">{prob.time}초</TableCell>
+                        <TableCell align="right">{reviewData.logs.filter(item => item.prob_seq === idx + 1).length}</TableCell>
                         <TableCell
                           align="center"
                           sx={{
@@ -266,7 +266,7 @@ const Review = () => {
                       >
                         {item.option_seq}
                       </Avatar>
-                      {item.option_text}
+                      <div dangerouslySetInnerHTML={{__html: item.option_text}} />
                     </Box>
                   ))}
                 </Stack>
@@ -281,7 +281,15 @@ const Review = () => {
               </Box>
             </Container>
             <Container sx={{ flex: "1!important"}}>
-              <Typography>액션 로그</Typography>
+              <Typography variant="h5">액션 로그</Typography>
+              <ul style={{ padding: "8px", marginTop: 0, height: "100%" }}>
+                {reviewData.logs && reviewData.logs.filter(item => item.prob_seq === dialogSeq).map(item => (
+                    <li key={item.timestamp} style={{ marginTop: "8px", marginBottom: "8px"}}>
+                      <div>{item.action}</div>
+                      <div>{new Date(parseInt(item.timestamp)).toLocaleString()}</div>
+                    </li>
+                ))}
+              </ul>
             </Container>
           </DialogContent>
         </Dialog>
