@@ -304,7 +304,7 @@ const Review = () => {
                           ? reviewData.problems[dialogSeq - 1].correctness
                               ? "예"
                               : "아니오"
-                          : "데이터 없음"}({(reviewData.problems && reviewData.problems[dialogSeq - 1].correct_rate * 100).toFixed(2)}%)
+                          : "데이터 없음"}({(reviewData.problems ? reviewData.problems[dialogSeq - 1].correct_rate * 100 : 0).toFixed(2)}%)
                     </Typography>
                   </Box>
                   <Box>
