@@ -308,8 +308,8 @@ const Review = () => {
                   <Typography>{reviewData.problems && dialogSeq > 0 ? reviewData.problems[dialogSeq - 1].time : 0}초</Typography>
                 </Box>
                 <Box>
-                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>액션 (평균)</Typography>
-                  <Typography>10번 (3번)</Typography>
+                  <Typography sx={{backgroundColor: "black", color: "white", padding: "4px"}}>액션</Typography>
+                  <Typography>{reviewData.logs && reviewData.logs.filter(item => item.prob_seq === dialogSeq).length}</Typography>
                 </Box>
               </Stack>
             </Container>
