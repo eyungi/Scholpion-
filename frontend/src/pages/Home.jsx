@@ -156,40 +156,44 @@ const Home = () => {
             오늘도 열심히 공부해볼까요?
           </h2>
           <Box sx={{ display: "flex", flexDirection: "row", gap: "8px" }}>
-              <Button
-                  color="gray"
-                  variant="contained"
-                  onClick={onClickToList}
-                  style={{
-                      minWidth: "200px",
-                      minHeight: "100px",
-                      fontSize: "24px",
-                      backgroundColor: "#d3d3d3",
-                  }}
-              >
-                  <img
-                      src={tryTest}
-                      style={{ width: "40px", height: "40px", margin: "2px" }}
-                  />
-                  시험 응시
-              </Button>
-              <Button
-                  color="gray"
-                  variant="contained"
-                  style={{
-                      minWidth: "200px",
-                      minHeight: "100px",
-                      fontSize: "24px",
-                      backgroundColor: "#d3d3d3",
-                  }}
-                  onClick={() => nav("/resultlist")}
-              >
-                  <img
-                      src={checkGrade}
-                      style={{ width: "40px", height: "40px", margin: "2px" }}
-                  />
-                  결과 확인
-              </Button>
+              {userInfo.role === "student" && (
+                  <>
+                      <Button
+                          color="gray"
+                          variant="contained"
+                          onClick={onClickToList}
+                          style={{
+                              minWidth: "200px",
+                              minHeight: "100px",
+                              fontSize: "24px",
+                              backgroundColor: "#d3d3d3",
+                          }}
+                      >
+                          <img
+                              src={tryTest}
+                              style={{ width: "40px", height: "40px", margin: "2px" }}
+                          />
+                          시험 응시
+                      </Button>
+                      <Button
+                          color="gray"
+                          variant="contained"
+                          style={{
+                              minWidth: "200px",
+                              minHeight: "100px",
+                              fontSize: "24px",
+                              backgroundColor: "#d3d3d3",
+                          }}
+                          onClick={() => nav("/resultlist")}
+                      >
+                          <img
+                              src={checkGrade}
+                              style={{ width: "40px", height: "40px", margin: "2px" }}
+                          />
+                          결과 확인
+                      </Button>
+                  </>
+              )}
               {userInfo.role === "teacher" && (
                   <Button
                       color="gray"
