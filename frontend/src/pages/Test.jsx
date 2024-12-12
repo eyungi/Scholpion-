@@ -317,9 +317,9 @@ const Test = () => {
   const stopDrawing = () => {
     isDrawingRef.current = false;
     if (!isEraserActive)
-      insertLog("연습장 작성 끝", new Date().getTime());
+      insertLog("연습장 작성 끝", number, new Date().getTime());
     else
-      insertLog("연습장 지우기 끝", new Date().getTime());
+      insertLog("연습장 지우기 끝", number, new Date().getTime());
   };
 
   const resetCanvas = () => {
@@ -328,7 +328,7 @@ const Test = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // ctx.fillStyle = "#ffffff";
     // ctx.fillRect(0, 0, canvas.width, canvas.height);
-    insertLog("연습장 리셋", new Date().getTime());
+    insertLog("연습장 리셋", number, new Date().getTime());
   };
 
   const toggleEraser = () => {
