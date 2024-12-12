@@ -143,7 +143,7 @@ const Review = () => {
             <Typography>{`응시 날짜 : ${formatDateTime(
               reviewData.solved_at
             )}`}</Typography>
-            <Typography>{`걸린 시간 : ${total_time / 60}분 ${total_time % 60}`}</Typography>
+            <Typography>{`걸린 시간 : ${(total_time / 60).toFixed()}분 ${(total_time % 60).toFixed()}초`}</Typography>
             <Typography>{`점수 : ${reviewData.score}`}</Typography>
             <Typography>{`피드백 : ${reviewData.feedback !== null ? "완료" : "미완"}`}</Typography>
           </Box>
