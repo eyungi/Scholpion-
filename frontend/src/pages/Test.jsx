@@ -336,19 +336,13 @@ const Test = () => {
   };
 
   return (
-    <Grid2
-        container
-        spacing={2}
-         sx={{
-           height: "100vh",
-         }}
-    >
+    <Grid2 container spacing={2}>
       <Grid2
         size={3.6}
         sx={{
           borderRight: "2px solid rgba(0,0,0,0.1)",
           position: "relative",
-          height: "100%",
+          height: "100vh",
         }}
       >
         <Container>
@@ -463,12 +457,12 @@ const Test = () => {
         </Container>
       </Grid2>
       <Grid2
-        size={8.2}
+        size={8.4}
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          height: "95%",
+          height: "100vh",
         }}
       >
         <Box
@@ -530,6 +524,7 @@ const Test = () => {
                 height: "100%",
                 border: "1px solid rgba(0,0,0,0.1)",
                 display: number === index + 1 ? "block" : "none", // 현재 문제에만 캔버스 표시
+                touchAction: "none",
               }}
               onPointerDown={startDrawing}
               onPointerMove={draw}
