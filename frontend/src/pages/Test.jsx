@@ -525,9 +525,9 @@ const Test = () => {
                 border: "1px solid rgba(0,0,0,0.1)",
                 display: number === index + 1 ? "block" : "none", // 현재 문제에만 캔버스 표시
               }}
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
+              onPointerDown={startDrawing}
+              onPointerMove={draw}
+              onPointerUp={stopDrawing}
               // onMouseLeave={stopDrawing}
             />
           ))}
