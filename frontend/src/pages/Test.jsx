@@ -336,13 +336,19 @@ const Test = () => {
   };
 
   return (
-    <Grid2 container spacing={2}>
+    <Grid2
+        container
+        spacing={2}
+         sx={{
+           height: "100vh",
+         }}
+    >
       <Grid2
         size={3.6}
         sx={{
           borderRight: "2px solid rgba(0,0,0,0.1)",
           position: "relative",
-          height: "100vh",
+          height: "100%",
         }}
       >
         <Container>
@@ -457,12 +463,12 @@ const Test = () => {
         </Container>
       </Grid2>
       <Grid2
-        size={8.4}
+        size={8.2}
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          height: "100vh",
+          height: "95%",
         }}
       >
         <Box
